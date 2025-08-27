@@ -1,104 +1,94 @@
-const { ldapCreateUser, ldapModify, ldapChangePassword, ldapAddUserToGroup, ldapDeleteUser, irodsCreateUser, irodsChMod, irodsChangePassword, irodsSafeDeleteHome, irodsDeleteUser, mailchimpSubscribe, mailchimpDelete, mailmanUpdateSubscription } = require('./lib');
-const { logger } = require('../../lib/logging');
+const axios = require('axios')
+const { logger } = require('../../lib/logging')
 
 async function userCreationWorkflow(user) {
-    if (!user)
-        throw('Missing required property');
+    if (!user) throw 'Missing required property'
 
-    logger.info(`Running native workflow for user ${user.username}: creation`);
+    logger.info(`Running native workflow for user ${user.username}: creation`)
 
-    // LDAP: create user
-    await ldapCreateUser(user);
+    const baseUrl = process.env.PORTAL_CONDUCTOR_URL
+    if (!baseUrl) {
+        throw new Error('PORTAL_CONDUCTOR_URL environment variable is not set')
+    }
 
-    // LDAP: set user password
-    await ldapChangePassword(user.username, user.password);
+    const requestBody = {
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        username: user.username,
+        user_id: user.username,
+        password: user.password,
+        department: user.department,
+        organization: user.institution,
+        title: user.occupation.name
+    }
 
-    // LDAP: add user to groups
-    await ldapAddUserToGroup(user.username, process.env["LDAP_EVERYONE_GROUP"]);
-    await ldapAddUserToGroup(user.username, "community");
-
-    // IRODS: create user
-    await irodsCreateUser(user.username);
-
-    // IRODS: set user password
-    await irodsChangePassword(user.username, user.password);
-
-    // IRODS: grant access to user directory
-    if (process.env.IRODS_IPCSERVICES_ENABLED === "true")
-        await irodsChMod("own", "ipcservices", `/${process.env["IRODS_ZONE_NAME"]}/home/${user.username}`);
-
-    // IRODS: grant access to user directory
-    await irodsChMod("own", "rodsadmin", `/${process.env["IRODS_ZONE_NAME"]}/home/${user.username}`);
-
-    // Mailchimp: subscribe user to newsletter 
-    if (process.env.MAILCHIMP_ENABLED.toLowerCase() === "true")
-        await mailchimpSubscribe(user.email, user.first_name, user.last_name);
+    try {
+        const response = await axios.post(`${baseUrl}/users`, requestBody, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        logger.info(`User creation request successful for ${user.username}`)
+        return response.data
+    } catch (error) {
+        logger.error(`User creation request failed for ${user.username}:`, error.message)
+        throw error
+    }
 }
 
 async function userPasswordUpdateWorkflow(user) {
-    if (!user)
-        throw('Missing required property');
+    if (!user) throw 'Missing required property'
 
-    logger.info(`Running native workflow for user ${user.username}: password update`);
+    logger.info(
+        `Running native workflow for user ${user.username}: password update`
+    )
 
-    // LDAP: update user password
-    await ldapChangePassword(user.username, user.password);
+    const baseUrl = process.env.PORTAL_CONDUCTOR_URL
+    if (!baseUrl) {
+        throw new Error('PORTAL_CONDUCTOR_URL environment variable is not set')
+    }
 
-    // LDAP: update shadowLastChange 
-    const daysSinceEpoch = Math.floor(new Date()/8.64e7).toString();
-    await ldapModify(user.username, 'shadowLastChange', daysSinceEpoch)
-
-    // IRODS: set user password
-    await irodsChangePassword(user.username, user.password);
+    try {
+        const response = await axios.post(`${baseUrl}/users/${user.username}/password`, null, {
+            params: {
+                password: user.password
+            },
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        logger.info(`User password update request successful for ${user.username}`)
+        return response.data
+    } catch (error) {
+        logger.error(`User password update request failed for ${user.username}:`, error.message)
+        throw error
+    }
 }
 
 // Based on v1 portal:/account/views/user.py:perform_destroy()
 async function userDeletionWorkflow(user) {
-    if (!user || !user.emails)
-        throw('Missing required property');
+    if (!user || !user.emails) throw 'Missing required property'
 
-    logger.info(`Running native workflow for user ${user.username}: deletion`);
+    logger.info(`Running native workflow for user ${user.username}: deletion`)
 
-    // LDAP: delete user
+    const baseUrl = process.env.PORTAL_CONDUCTOR_URL
+    if (!baseUrl) {
+        throw new Error('PORTAL_CONDUCTOR_URL environment variable is not set')
+    }
+
     try {
-        await ldapDeleteUser(user.username);
-    }
-    catch(e) {
-        console.error(e)
-    }
-
-    // IRODS: delete user
-    try {
-        await irodsSafeDeleteHome(user.username)
-        await irodsDeleteUser(user.username);
-    }
-    catch(e) {
-        console.error(e)
-    }
-
-    // Mailchimp: unsubscribe user from newsletter 
-    if (process.env.MAILCHIMP_ENABLED.toLowerCase() == "true") {
-        try {
-            await mailchimpDelete(user.email);
-        }
-        catch(e) {
-            console.error(e)
-        }
-    }
-
-    // Mailman: unsubscribe from mailing lists
-    if (process.env.MAILMAN_ENABLED) {
-        for (const email of user.emails) {
-            for (const mailingList of email.mailing_lists) {
-                try {
-                    await mailmanUpdateSubscription(mailingList.list_name, user.email, false);
-                }
-                catch(e) {
-                    console.error(e)
-                }
-            }
-        }
+        const response = await axios.delete(`${baseUrl}/users/${user.username}`)
+        logger.info(`User deletion request successful for ${user.username}`)
+        return response.data
+    } catch (error) {
+        logger.error(`User deletion request failed for ${user.username}:`, error.message)
+        throw error
     }
 }
 
-module.exports = { userCreationWorkflow, userDeletionWorkflow, userPasswordUpdateWorkflow };
+module.exports = {
+    userCreationWorkflow,
+    userDeletionWorkflow,
+    userPasswordUpdateWorkflow,
+}
