@@ -4,7 +4,6 @@ const { emailNewAccountConfirmation, emailPasswordReset } = require('./lib/email
 const { decodeHMAC, generateToken, decodeToken } = require('./lib/hmac');
 const { asyncHandler } = require('./lib/auth');
 const { encodePassword } = require('./lib/password');
-const Argo = require('./lib/argo');
 const serviceApprovers = require('./approvers/service');
 const { userCreationWorkflow, userPasswordUpdateWorkflow } = require('./workflows/native/user.js');
 const sequelize = require('sequelize');
@@ -259,18 +258,12 @@ router.put('/users/password', asyncHandler(async (req, res) => {
     user.password = fields.password; // kludgey, but use raw password in workflows below
 
     if (oldPassword != '') { // existing user password reset
-        if (process.env.ARGO_ENABLED)
-            await submitUserWorkflow('update-password', user);
-        else
-            await userPasswordUpdateWorkflow(user);
+        await userPasswordUpdateWorkflow(user);
     }
     else { // new user
         // Run user creation workflow
         logger.info(`Running user creation workflow for user ${user.username}`)
-        if (process.env.ARGO_ENABLED)
-            await submitUserWorkflow('create-user', user);
-        else
-            await userCreationWorkflow(user);
+        await userCreationWorkflow(user);
 
         // Grant access to default services
         logger.info(`Granting access to default services for user ${user.username}`)
@@ -294,42 +287,6 @@ router.put('/users/password', asyncHandler(async (req, res) => {
     }
 }));
 
-async function submitUserWorkflow(templateName, user) {
-    // Calculate number of days since epoch (needed for LDAP)
-    const daysSinceEpoch = Math.floor(new Date()/8.64e7);
-
-    // Calculate uidNumber
-    // Old method: /repos/portal/cyverse_ldap/utils/get_uid_number.py
-    const uidNumber = user.id + process.env.UID_NUMBER_OFFSET;
-
-    // Submit Argo workflow
-    return await Argo.submit(
-        'user.yaml',
-        templateName,
-        {
-            // User params
-            user_id_number: uidNumber,
-            user_id: user.username,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            password: user.password,
-            department: user.department,
-            organization: user.institution,
-            title: user.occupation.name,
-            daysSinceEpoch: daysSinceEpoch,
-
-            // Other params
-            portal_api_base_url: process.env.API_BASE_URL,
-            ldap_host: process.env.LDAP_HOST,
-            ldap_admin: process.env.LDAP_ADMIN,
-            ldap_password: process.env.LDAP_PASSWORD,
-            mailchimp_api_url: process.env.MAILCHIMP_URL,
-            mailchimp_api_key: process.env.MAILCHIMP_API_KEY,
-            mailchimp_list_id: process.env.MAILCHIMP_LIST_ID,
-        }
-    );
-}
 
 // Send reset password link
 router.post('/users/reset_password', asyncHandler(async (req, res) => {
@@ -400,9 +357,7 @@ router.post('/confirm_email', asyncHandler(async (req, res) => {
 }));
 
 /*
- * Argo callback to set service access request status to "granted"
- * 
- * Called in service registration workflow (src/api/workflows/argo) to signal workflow completion
+ * Callback to set service access request status to "granted"
  */
 // router.post('/services/requests/:id(\\d+)/grant', asyncHandler(async (req, res) => { //FIXME require API key
 //     const requestId = req.params.id;
@@ -424,9 +379,7 @@ router.post('/confirm_email', asyncHandler(async (req, res) => {
 // }));
 
 /*
- * Argo callback to subscribe to mailing list
- * 
- * Called in service registration workflow (src/api/workflows/argo) to subscribe to service mailing list
+ * Callback to subscribe to mailing list
  */
 // router.post('/mailing_lists/:nameOrId(\\w+)/subscribe', asyncHandler(async (req, res) => { //FIXME require API key
 //     const nameOrId = req.params.nameOrId; // mailing list name (e.g. "de-users") or ID

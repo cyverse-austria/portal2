@@ -320,10 +320,7 @@ router.post('/password', getUser, asyncHandler(async (req, res) => {
     // Update password in LDAP (do after response as to not delay it)
     logger.info(`Updating password for user ${user.username}`);
     user.password = fields.password; // kludgey, but use raw password
-    if (process.env.ARGO_ENABLED)
-        await submitUserWorkflow('update-password', user);
-    else
-        await userPasswordUpdateWorkflow(user);
+    await userPasswordUpdateWorkflow(user);
 }));
 
 /*
@@ -396,29 +393,7 @@ router.delete('/:id(\\d+)', getUser, asyncHandler(async (req, res) => {
         return res.status(403).send('Cannot delete privileged user');
 
     // Submit user deletion workflow to remove user from subsystems (LDAP, IRODS, etc)
-    if (process.env.ARGO_ENABLED) {
-        await Argo.submit(
-            'user.yaml',
-            'delete-user',
-            {
-                // User params
-                user_id: user.username,
-                email: user.email,
-
-                // Other params
-                portal_api_base_url: process.env.API_BASE_URL,
-                ldap_host: process.env.LDAP_HOST,
-                ldap_admin: process.env.LDAP_ADMIN,
-                ldap_password: process.env.LDAP_PASSWORD,
-                mailchimp_api_url: process.env.MAILCHIMP_URL,
-                mailchimp_api_key: process.env.MAILCHIMP_API_KEY,
-                mailchimp_list_id: process.env.MAILCHIMP_LIST_ID,
-            }
-        );
-    }
-    else {
-        await userDeletionWorkflow(user);
-    }
+    await userDeletionWorkflow(user);
 
     // Remove user from database
     logger.info(`Deleting user ${user.username} id=${user.id}`);

@@ -1,4 +1,4 @@
-// cURL is used for HTTP requests instead of native request because many of these tasks were ported from Argo workflows
+// cURL is used for HTTP requests instead of native request libraries
 const fs = require('fs')
 const { exec, execFile, execSync } = require('child_process')
 var crypto = require('crypto')

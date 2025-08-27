@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#TODO could be replaced in Argo workflow with base64 and curl commands?
+#TODO could be replaced with base64 and curl commands?
 
 import os
 import sys

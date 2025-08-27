@@ -1,6 +1,5 @@
 const models = require('../models');
 const AccessRequestConversation = models.api_accessrequestconversation;
-const Argo = require('../lib/argo');
 const { emailServiceAccessGranted } = require('../lib/email')
 const { logger } = require('../lib/logging');
 const intercom = require('../lib/intercom');
@@ -27,15 +26,14 @@ async function approveRequest(request) {
     logger.info(`approve: Set service access request ${request.id} status to "${request.status}"`);
 }
 
-// Map service approval keys to Argo workflow templates
+// Service approval keys that require service registration workflow
 const GRANTERS = {
-    ATMOSPHERE: 'atmosphere-grant-access',
-    //DATA_COMMONS: 'data-commmons-grant-access', // use AUTO_APPROVE 
-    DISCOVERY_ENVIRONMENT: 'discovery-environment-grant-access',
-    COGE: 'coge-grant-access',
-    BISQUE: 'bisque-grant-access',
-    SCI_APPS: 'sciapps-grant-access',
-    VICE: 'vice-grant-access'
+    ATMOSPHERE: true,
+    DISCOVERY_ENVIRONMENT: true,
+    COGE: true,
+    BISQUE: true,
+    SCI_APPS: true,
+    VICE: true
 };
 
 async function grantRequest(request) {
@@ -45,38 +43,9 @@ async function grantRequest(request) {
 
     const key = request.service.approval_key;
     if (key in GRANTERS) {
-        if (process.env.ARGO_ENABLED) {
-            const workflow = GRANTERS[key];
-            logger.info('grantRequest:', key, workflow);
-
-            // Submit Argo workflow
-            await Argo.submit(
-                'services.yaml',
-                workflow,
-                {
-                    // User params
-                    request_id: request.id,
-                    user_id: request.user.username,
-                    email: request.user.email,
-
-                    // Other params
-                    portal_api_base_url: process.env.API_BASE_URL,
-                    ldap_host: process.env.LDAP_HOST,
-                    ldap_admin: process.env.LDAP_ADMIN,
-                    ldap_password: process.env.LDAP_PASSWORD,
-                    bisque_url: process.env.BISQUE_URL,
-                    bisque_username: process.env.BISQUE_USER,
-                    bisque_password: process.env.BISQUE_PASSWORD
-                }
-            );
-
-            // Status is set to "granted" in Argo workflow via POST to /api/services/requests/[id]
-        }
-        else { // Argo disabled, fall back to native workflow
-            await serviceRegistrationWorkflow(request);
-            await request.grant();
-            await emailServiceAccessGranted(request);
-        }
+        await serviceRegistrationWorkflow(request);
+        await request.grant();
+        await emailServiceAccessGranted(request);
     }
     else { // AUTO_APPROVE
         logger.info('grantRequest: AUTO_APPROVE');

@@ -204,7 +204,7 @@ router.put('/:id(\\d+)/requests', getUser, asyncHandler(async (req, res) => {
  * 
  * Called in admin "Access Requests" page to grant/deny request.
  * 
- * For Argo workflow completion callback see src/api/public.js:/services/requests/:id
+ * For workflow completion callback see src/api/public.js:/services/requests/:id
  * 
  */
 router.post('/requests/:id(\\d+)', getUser, requireAdmin, asyncHandler(async (req, res) => {
