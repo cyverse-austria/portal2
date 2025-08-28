@@ -1,5 +1,4 @@
 import React, {useEffect, createRef} from "react"
-import lottie from 'lottie-web'
 // import { makeStyles } from '../styles/tss'
 import animation from '../animations/scientist.json'
 
@@ -8,12 +7,17 @@ const Animation = () => {
   let animationContainer = createRef();
   
   useEffect(() => {
-    lottie.loadAnimation({
-      container: animationContainer.current,
-      renderer: "svg",
-      loop: true,
-      autoplay: true,
-      animationData: animation
+    // Dynamic import to avoid SSR issues
+    import('lottie-web').then((lottie) => {
+      if (animationContainer.current) {
+        lottie.default.loadAnimation({
+          container: animationContainer.current,
+          renderer: "svg",
+          loop: true,
+          autoplay: true,
+          animationData: animation
+        });
+      }
     });
   }, []);
 
