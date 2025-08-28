@@ -31,7 +31,6 @@ const GRANTERS = {
     ATMOSPHERE: true,
     DISCOVERY_ENVIRONMENT: true,
     COGE: true,
-    BISQUE: true,
     SCI_APPS: true,
     VICE: true
 };

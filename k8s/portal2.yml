@@ -260,21 +260,6 @@ spec:
                 secretKeyRef:
                   name: user-portal-config
                   key: MAILMAN_PASSWORD
-            - name: BISQUE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: BISQUE_URL
-            - name: BISQUE_USER
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: BISQUE_USER
-            - name: BISQUE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: BISQUE_PASSWORD
             - name: TERRAIN_URL
               valueFrom:
                 secretKeyRef:
