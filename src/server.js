@@ -81,6 +81,7 @@ app.prepare()
     .then(() => {
         const server = express()
         const expressWS = require('express-ws')(server)
+        const sockets = {} // Track websocket connections by username
 
         // Setup logging
         server.use(errorLogger)
@@ -226,6 +227,15 @@ app.prepare()
         })
 
         server.ws('/', function (ws, req) {
+            const username = getUserID(req)
+            if (username) {
+                sockets[username] = ws
+                
+                ws.on('close', () => {
+                    delete sockets[username]
+                })
+            }
+            
             ws.send(
                 JSON.stringify({
                     type: WS_CONNECTED,
