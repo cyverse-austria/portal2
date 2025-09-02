@@ -56,7 +56,6 @@ UI_BASE_URL=http://localhost:3000  # or your production URL
 
 ### 🖥️ Server Configuration
 - `SERVER_PORT` - Main application port (default: 3000)
-- `WS_PORT` - WebSocket port (default: 3001)
 - `NODE_ENV` - Environment (development/production)
 
 ### 🔗 URL Configuration  
@@ -105,7 +104,6 @@ UI_BASE_URL=http://localhost:3000  # or your production URL
 - `PROFILE_*_TEXT` - User-facing messages
 
 ### 🧪 Development & Testing
-- `DEBUG_USER` - Username to emulate (bypasses auth)
 - `NATIVE_WORKFLOW_IMAGE_ID` - Docker image for workflows
 
 ## Environment-Specific Setup
@@ -157,7 +155,6 @@ docker-compose -f docker-compose.yml -f docker-compose.local.yml up
 ### 🛡️ Production Security
 - Set `SESSION_SECURE_COOKIE=true` for HTTPS
 - Use `NODE_ENV=production`
-- Don't set `DEBUG_USER` in production
 - Use real certificates and secure endpoints
 
 ### 🔍 Secret Generation

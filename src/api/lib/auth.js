@@ -13,7 +13,7 @@ const getUserID = (req) => {
 }
 
 const getUser = async (req, _, next) => {
-  const userId = process.env.DEBUG_USER || getUserID(req)
+  const userId = getUserID(req)
   if (userId) {
       const user = await User.findOne({ where: { username: userId } })
       if (!user) // should never happen

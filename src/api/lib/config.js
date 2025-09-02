@@ -92,10 +92,6 @@ class ConfigManager {
       // Security
       honeypot: {
         divisor: parseInt(process.env.HONEYPOT_DIVISOR) || 7
-      },
-      // Debug
-      debug: {
-        user: process.env.DEBUG_USER
       }
     };
     
@@ -313,14 +309,6 @@ class ConfigManager {
     return this._config.honeypot;
   }
 
-  /**
-   * Get debug configuration
-   * @returns {Object} Debug configuration object
-   */
-  getDebugConfig() {
-    this.init();
-    return this._config.debug;
-  }
 
   /**
    * Get all configuration

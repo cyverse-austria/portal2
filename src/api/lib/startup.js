@@ -63,10 +63,6 @@ function validateStartupConfiguration() {
             logger.info('Sentry error tracking not configured');
         }
         
-        const debugConfig = config.getDebugConfig();
-        if (debugConfig.user) {
-            logger.warn(`DEBUG MODE: Emulating user ${debugConfig.user}`);
-        }
         
         logger.info('✓ Application configuration validation completed successfully');
         return true;

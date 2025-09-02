@@ -201,7 +201,7 @@ app.prepare()
         )
 
         // Require auth on all routes/page after this
-        /*if (process.env.DEBUG_USER)*/ server.use(keycloakClient.protect())
+        server.use(keycloakClient.protect())
 
         // Restricted UI pages
         server.get('/forms*', (req, res) => {
@@ -256,12 +256,6 @@ app.prepare()
             if (err) throw err
             if (isDevelopment)
                 console.log('!!!!!!!!! RUNNING IN DEV MODE !!!!!!!!!!')
-            if (process.env.DEBUG_USER)
-                console.log(
-                    '!!!!!!!!! EMULATING USER',
-                    process.env.DEBUG_USER,
-                    '!!!!!!!!!!'
-                )
             console.log(`Ready on port ${process.env.SERVER_PORT}`)
         })
     })
