@@ -70,7 +70,7 @@ UI_BASE_URL=http://localhost:3000  # or your production URL
 - `DB_USER` - Database username (**required**)
 - `DB_PASSWORD` - Database password (**required**)
 - `DB_SESSION_TABLE` - Session table name (default: "session")
-- `DB_LOGGING` - Enable query logging (true/false)
+- `DB_LOGGING` - Enable query logging (optional, default: false)
 
 ### 🔐 Authentication & Security
 - `SESSION_SECRET` - Session signing secret (**required**)
