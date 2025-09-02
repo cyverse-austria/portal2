@@ -10,7 +10,7 @@ const FormField = models.api_formfield;
 const FormSubmission = models.api_formsubmission;
 const FormFieldSubmission = models.api_formfieldsubmission;
 const FormSubmissionConversation = models.api_formsubmissionconversation;
-const { UI_ADMIN_FORM_SUBMISSION_URL } = require('../constants');
+const { UI_ADMIN_FORM_SUBMISSION_URL } = require('../constants/server');
 const { emailGenericMessage } = require('./lib/email')
 const intercom = require('./lib/intercom');
 

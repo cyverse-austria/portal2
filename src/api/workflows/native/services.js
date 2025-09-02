@@ -1,6 +1,7 @@
 const crypto = require('crypto')
 const axios = require('axios')
 const { logger } = require('../../lib/logging')
+const config = require('../../lib/config')
 const models = require('../../models')
 const MailingList = models.api_mailinglist
 const EmailAddress = models.account_emailaddress
@@ -16,9 +17,9 @@ async function serviceRegistrationWorkflow(request) {
         `Running native workflow for service ${service.name} and user ${user.username}`
     )
 
-    const baseUrl = process.env.PORTAL_CONDUCTOR_URL
+    const { url: baseUrl } = config.getPortalConductorConfig()
     if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL environment variable is not set')
+        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
     }
 
     const requestBody = {

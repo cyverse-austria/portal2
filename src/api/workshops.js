@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { getUser, requireAdmin, asyncHandler } = require('./lib/auth');
 const { logger } = require('./lib/logging');
+const config = require('./lib/config');
 const sequelize = require('sequelize');
 const models = require('./models');
 const User = models.account_user;
@@ -119,7 +120,7 @@ DTSTART:${convertToICSDate(dates[i].start)}
 DTEND:${convertToICSDate(dates[i].end)}
 SUMMARY:${workshop.title}
 UID:${'workshop' + workshop.id + '-' + i + '@user.cyverse.org'}
-URL:${process.env.UI_BASE_URL}/workshops/${workshop.id}
+URL:${config.getUiConfig().baseUrl}/workshops/${workshop.id}
 END:VEVENT
 `);
         }

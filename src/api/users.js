@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { logger } = require('./lib/logging');
 const { requireAdmin, isAdmin, getUser, asyncHandler } = require('./lib/auth');
+const config = require('./lib/config');
 const { generateToken } = require('./lib/hmac');
 const { emailPasswordReset } = require('./lib/email');
 const { checkPassword, encodePassword } = require('./lib/password');
@@ -14,7 +15,7 @@ const PasswordResetRequest = models.account_passwordresetrequest;
 const EmailAddress = models.account_emailaddress;
 const Workshop = models.api_workshop;
 const WorkshopOrganizer = models.api_workshoporganizer;
-const { UI_ACCOUNT_REVIEW_URL } = require('../constants')
+const { UI_ACCOUNT_REVIEW_URL } = require('../constants/server')
 
 //TODO move into module
 const likeAny = (key, vals) => sequelize.where(sequelize.fn('lower', sequelize.col(key)), { [sequelize.Op.like]: { [sequelize.Op.any]: vals.map(k => `%${k}%`) } }) 
@@ -110,15 +111,16 @@ router.get('/:usernameOrId(\\w+)/status', getUser, asyncHandler(async (req, res)
     if (!user)
         return res.status(404).send('User not found');
 
+    const profileConfig = config.getProfileConfig();
     const daysSinceUpdate = (Date.now() - new Date(user.updated_at)) / (24*60*60*1000)
     res.status(200).json({
       updated_at: user.updated_at,
-      update_required: daysSinceUpdate > process.env.PROFILE_UPDATE_PERIOD,
-      warning_required: daysSinceUpdate <= process.env.PROFILE_UPDATE_PERIOD && daysSinceUpdate > (process.env.PROFILE_UPDATE_PERIOD - process.env.PROFILE_WARNING_PERIOD),
-      update_period: process.env.PROFILE_UPDATE_PERIOD,
-      warning_period: process.env.PROFILE_WARNING_PERIOD,
-      update_text: process.env.PROFILE_UPDATE_TEXT,
-      warning_text: process.env.PROFILE_WARNING_TEXT,
+      update_required: daysSinceUpdate > profileConfig.updatePeriod,
+      warning_required: daysSinceUpdate <= profileConfig.updatePeriod && daysSinceUpdate > (profileConfig.updatePeriod - profileConfig.warningPeriod),
+      update_period: profileConfig.updatePeriod,
+      warning_period: profileConfig.warningPeriod,
+      update_text: profileConfig.updateText,
+      warning_text: profileConfig.warningText,
       update_url: UI_ACCOUNT_REVIEW_URL
     });
 }));

@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { getUser, requireAdmin, asyncHandler } = require('./lib/auth');
 const { emailNewEmailConfirmation } = require('./lib/email');
+const config = require('./lib/config');
 const { generateHMAC } = require('./lib/hmac');
 const { ldapModify } = require('./workflows/native/lib.js');
 const { mailmanUpdateSubscription } = require('./workflows/native/lib');
@@ -123,7 +124,7 @@ router.delete('/email_addresses/:id(\\d+)', getUser, asyncHandler(async (req, re
     res.status(200).send('success');
 
     // Unsubscribe from all subscribed mailing lists in Mailman (do after response as to not delay it)
-    if (process.env.MAILMAN_ENABLED) {
+    if (config.getFeatures().mailmanEnabled) {
         for (const list of emailAddress.mailing_lists) {
             if (subscriptions.find(s => s.mailing_list_id == list.id && s.is_subscribed))
                 await mailmanUpdateSubscription(list.list_name, emailAddress.email, false);
@@ -214,7 +215,7 @@ router.post('/:id(\\d+)/subscriptions', getUser, asyncHandler(async (req, res) =
     res.status(200).send('success');
 
     // Update subscription status in Mailman (do after response as to not delay it)
-    if (process.env.MAILMAN_ENABLED)
+    if (config.getFeatures().mailmanEnabled)
         await mailmanUpdateSubscription(mailingList.list_name, email, subscribe);
 }));
 

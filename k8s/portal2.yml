@@ -70,41 +70,6 @@ spec:
                 secretKeyRef:
                   name: user-portal-config
                   key: SENTRY_DSN
-            - name: IRODS_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: IRODS_HOST
-            - name: IRODS_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: IRODS_PORT
-            - name: IRODS_ZONE_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: IRODS_ZONE_NAME
-            - name: IRODS_USER_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: IRODS_USER_NAME
-            - name: IRODS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: IRODS_PASSWORD
-            - name: IRODS_HOME_DIR
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: IRODS_HOME_DIR
-            - name: IRODS_IPCSERVICES_ENABLED
-              valueFrom:
-                secretKeyRef:
-                  name: user-portal-config
-                  key: IRODS_IPCSERVICES_ENABLED
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:

@@ -1,14 +1,15 @@
 const axios = require('axios')
 const { logger } = require('../../lib/logging')
+const config = require('../../lib/config')
 
 async function userCreationWorkflow(user) {
     if (!user) throw 'Missing required property'
 
     logger.info(`Running native workflow for user ${user.username}: creation`)
 
-    const baseUrl = process.env.PORTAL_CONDUCTOR_URL
+    const { url: baseUrl } = config.getPortalConductorConfig()
     if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL environment variable is not set')
+        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
     }
 
     const requestBody = {
@@ -44,9 +45,9 @@ async function userPasswordUpdateWorkflow(user) {
         `Running native workflow for user ${user.username}: password update`
     )
 
-    const baseUrl = process.env.PORTAL_CONDUCTOR_URL
+    const { url: baseUrl } = config.getPortalConductorConfig()
     if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL environment variable is not set')
+        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
     }
 
     try {
@@ -72,9 +73,9 @@ async function userDeletionWorkflow(user) {
 
     logger.info(`Running native workflow for user ${user.username}: deletion`)
 
-    const baseUrl = process.env.PORTAL_CONDUCTOR_URL
+    const { url: baseUrl } = config.getPortalConductorConfig()
     if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL environment variable is not set')
+        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
     }
 
     try {

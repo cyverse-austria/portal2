@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const sendmail = require('sendmail')({ silent: false, devPort: process.env["SMTP_PORT"], smtpHost: process.env["SMTP_HOST"] });
 const { logger } = require('./logging');
-const { UI_WORKSHOPS_URL, UI_REQUESTS_URL, UI_SERVICES_URL, UI_PASSWORD_URL, UI_CONFIRM_EMAIL_URL } = require('../../constants');
+const { UI_WORKSHOPS_URL, UI_REQUESTS_URL, UI_SERVICES_URL, UI_PASSWORD_URL, UI_CONFIRM_EMAIL_URL } = require('../../constants/server');
 
 const TIME_BETWEEN_EMAILS = 30 * 1000 // rate limit to one email sent per 30 seconds
 let nextEmailSendTime = 0

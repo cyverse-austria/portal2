@@ -4,6 +4,7 @@ const { emailNewAccountConfirmation, emailPasswordReset } = require('./lib/email
 const { decodeHMAC, generateToken, decodeToken } = require('./lib/hmac');
 const { asyncHandler } = require('./lib/auth');
 const { encodePassword } = require('./lib/password');
+const config = require('./lib/config');
 const serviceApprovers = require('./approvers/service');
 const { userCreationWorkflow, userPasswordUpdateWorkflow } = require('./workflows/native/user.js');
 const sequelize = require('sequelize');
@@ -100,7 +101,7 @@ router.put('/users', asyncHandler(async (req, res) => {
                 return res.status(400).send('Validity test failed (1)');
         }
         else {
-            const index = (key % process.env.HONEYPOT_DIVISOR) - 1;
+            const index = (key % config.getHoneypotConfig().divisor) - 1;
             if (index >= 0 && index < HONEYPOT_FIELDS.length) {
                 const realKey = HONEYPOT_FIELDS[index];
                 fields[realKey] = fields[key]; // replace encoded key with actual field name

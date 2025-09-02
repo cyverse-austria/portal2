@@ -4,7 +4,7 @@ import { Link, Grid, Button, IconButton, Divider, Box, Typography } from '@mui/m
 import { Launch as LaunchIcon, HelpOutlineOutlined as HelpIcon } from '@mui/icons-material'
 import { Layout, SummaryCard, WelcomeBanner } from '../components'
 import { useUser } from '../contexts/user'
-import { WELCOME_BANNER_COOKIE } from '../constants'
+import { WELCOME_BANNER_COOKIE } from '../constants/client'
 import DataLimitAnnouncement from '../components/DataLimitAnnouncement'
 const inlineIcons = require('../inline_icons.json')
 

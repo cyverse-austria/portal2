@@ -13,7 +13,7 @@ import { Layout, DateRange, DateSpan, TabPanel, UpdateForm, FormDialog, Contacts
 import { useAPI } from '../../contexts/api'
 import { useError } from '../../contexts/error'
 import { useUser } from '../../contexts/user'
-const { WS_WORKSHOP_ENROLLMENT_REQUEST_STATUS_UPDATE } = require('../../constants')
+const { WS_WORKSHOP_ENROLLMENT_REQUEST_STATUS_UPDATE } = require('../../constants/client')
 
 const useStyles = makeStyles()((theme) => ({
   paper: {

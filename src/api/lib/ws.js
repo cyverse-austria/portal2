@@ -1,4 +1,4 @@
-const { WS_SERVICE_ACCESS_REQUEST_STATUS_UPDATE, WS_WORKSHOP_ENROLLMENT_REQUEST_STATUS_UPDATE } = require('../../constants');
+const { WS_SERVICE_ACCESS_REQUEST_STATUS_UPDATE, WS_WORKSHOP_ENROLLMENT_REQUEST_STATUS_UPDATE } = require('../../constants/client');
 
 function notifyClientOfServiceRequestStatusChange(ws, request) {
     // Send websocket event to client 

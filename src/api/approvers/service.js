@@ -12,7 +12,7 @@ const {
 const {
     UI_ADMIN_SERVICE_ACCESS_REQUEST_URL,
     EXT_ADMIN_VICE_ACCESS_REQUEST_URL,
-} = require('../../constants')
+} = require('../../constants/server')
 
 // Services with special approval requirements, all other services are auto-approved.
 const APPROVERS = {

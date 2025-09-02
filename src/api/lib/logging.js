@@ -5,7 +5,7 @@ const { getUserID } = require("./auth")
 
 //TODO move to config file
 const logLevel = 'debug'
-const logLabel = (process.env.NODE_ENV == 'production' ? 'PROD' : 'DEV')
+const logLabel = (process.env.NODE_ENV === 'production' ? 'PROD' : 'DEV')
 
 const formatMeta = (meta) => {
     const splat = meta[Symbol.for('splat')];

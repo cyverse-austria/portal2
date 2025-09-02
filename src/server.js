@@ -1,3 +1,6 @@
+// Load environment variables first
+require('./lib/env')
+
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
@@ -7,7 +10,7 @@ const Sentry = require('@sentry/node')
 const Keycloak = require('keycloak-connect')
 const next = require('next')
 const { logger, requestLogger, errorLogger } = require('./api/lib/logging')
-const { WS_CONNECTED } = require('./constants')
+const { WS_CONNECTED } = require('./constants/client')
 const { getUserID, getUserToken, requireAuth } = require('./api/lib/auth')
 const PortalAPI = require('./lib/apiClient')
 const ws = require('ws')

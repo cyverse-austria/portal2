@@ -9,7 +9,7 @@ import { Layout, ServiceActionButton, TabPanel, UpdateForm, QuestionsEditor, Con
 import { useAPI } from '../../contexts/api'
 import { useError, withGetServerSideError } from '../../contexts/error'
 import { useUser } from '../../contexts/user'
-import { WS_SERVICE_ACCESS_REQUEST_STATUS_UPDATE, EXT_ADMIN_VICE_ACCESS_REQUEST_API_URL } from '../../constants'
+import { WS_SERVICE_ACCESS_REQUEST_STATUS_UPDATE } from '../../constants/client'
 import inlineIcons from '../../inline_icons.json'
 import { makeStyles } from '../../styles/tss'
 
@@ -597,6 +597,8 @@ const AddRequestDialog = ({ open, forms, allForms, handleClose, handleSubmit }) 
 }
 
 export async function getServerSideProps({ req, query }) {
+  const { EXT_ADMIN_VICE_ACCESS_REQUEST_API_URL } = require('../../constants/server');
+  
   const service = await req.api.service(query.id)
   let viceStatus
 
@@ -605,8 +607,8 @@ export async function getServerSideProps({ req, query }) {
     const user = await req.api.user()
 
     // Get Terrain token
-    let resp = await fetch(`${process.env.TERRAIN_URL}/token/keycloak`, { 
-      headers: { 'Authorization': 'Basic ' + Buffer.from(process.env.TERRAIN_USER + ':' + process.env.TERRAIN_PASSWORD).toString('base64') }
+    let resp = await fetch(`${terrainConfig.url}/token/keycloak`, { 
+      headers: { 'Authorization': 'Basic ' + Buffer.from(terrainConfig.user + ':' + terrainConfig.password).toString('base64') }
     })
     let data = await resp.json()
 

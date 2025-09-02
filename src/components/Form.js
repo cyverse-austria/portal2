@@ -1,5 +1,6 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
+import getConfig from "next/config"
 import { Grid, Box, Button, Stepper, Step, StepLabel, MenuItem, TextField, Switch, FormControlLabel, Typography, CircularProgress, LinearProgress, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material'
 import Autocomplete from '@mui/material/Autocomplete'
 import { makeStyles } from '../styles/tss'
@@ -242,7 +243,11 @@ const { classes } = useStyles()
   )
 }
 
-const honeypotId = (modulus) => (process.env.HONEYPOT_DIVISOR * Math.floor(Math.random() * 1000) + modulus).toString()
+const honeypotId = (modulus) => {
+  const config = getConfig().publicRuntimeConfig
+  const divisor = parseInt(config.HONEYPOT_DIVISOR) || 7
+  return (divisor * Math.floor(Math.random() * 1000) + modulus).toString()
+}
 
 const SwitchField = (props) => (
   <>

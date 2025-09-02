@@ -2,6 +2,7 @@
 const fs = require('fs')
 const { exec, execFile, execSync } = require('child_process')
 var crypto = require('crypto')
+const config = require('../../lib/config')
 
 function terrainSubmitViceAccessRequest(token, user, usage) {
     const data = {
@@ -21,7 +22,7 @@ function terrainSubmitViceAccessRequest(token, user, usage) {
         'Content-Type: application/json',
         '--data',
         JSON.stringify(data),
-        `${process.env.TERRAIN_URL}/requests/vice`, //FIXME define URL in constants.js
+        `${config.getTerrainConfig().url}/requests/vice`
     ])
 }
 

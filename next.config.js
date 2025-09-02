@@ -26,7 +26,8 @@ const PUBLIC_PARAMS = [
   'INTERCOM_TOKEN',
   'INTERCOM_COMPANY_ID',
   'TERRAIN_URL',
-  'FAQ_URL'
+  'FAQ_URL',
+  'HONEYPOT_DIVISOR'
 ]
 
 // Verify that required configuration params are set
