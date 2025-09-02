@@ -264,14 +264,6 @@ async function sendFormSubmissionConfirmationMessage(submission) {
             await intercom.assignConversation(conversation.id, form.intercom_team_id);
     }
 
-    if (process.env.BCC_INTERCOM) {
-        const message = body + "\n\n" + linkText;
-        emailGenericMessage({ 
-            to: process.env.BCC_INTERCOM,
-            subject: 'User Portal Form Submission',
-            message
-        })
-    }
 }
 
 // Fetch form by ID or name

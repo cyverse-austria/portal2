@@ -143,14 +143,6 @@ async function sendAtmosphereSignupMessage(request, responseMessage) {
         await intercom.assignConversation(conversation.id, process.env.INTERCOM_ADMIN_TIER1_ATMOSPHERE_ID);
     }
 
-    if (process.env.BCC_INTERCOM) {
-        const message = body + "\n\n" + linkText
-        emailGenericMessage({ 
-            to: process.env.BCC_INTERCOM,
-            subject: 'User Portal Atmosphere Request',
-            message
-        })
-    }
 }
 
 async function approveVICE(request) {
@@ -212,13 +204,6 @@ async function sendVICESignupMessage(request, responseMessage) {
         await intercom.assignConversation(conversation.id, process.env.INTERCOM_ADMIN_TIER1_SCIENCE_TEAM_ID);
     }
 
-    if (process.env.BCC_INTERCOM) {
-        const message = body + "\n\n" + linkText
-        emailGenericMessage({ 
-            to: process.env.BCC_INTERCOM,
-            subject: 'User Portal VICE Request',
-            message
-        })
     }
 }
 
@@ -285,13 +270,6 @@ async function sendDataWatchSignupMessage(request, responseMessage) {
         await intercom.assignConversation(conversation.id, process.env.INTERCOM_ADMIN_TIER1_DATA_WATCH_ID);
     }
 
-    if (process.env.BCC_INTERCOM) {
-        const message = body + "\n\n" + linkText
-        emailGenericMessage({ 
-            to: process.env.BCC_INTERCOM,
-            subject: 'User Portal Data Watch Request',
-            message
-        })
     }
 }
 

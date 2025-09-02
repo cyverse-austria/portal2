@@ -315,6 +315,30 @@ spec:
                 secretKeyRef:
                   name: user-portal-config
                   key: SUPPORT_EMAIL
+            - name: NODE_ENV
+              value: "production"
+            - name: SERVER_PORT
+              value: "3000"
+            - name: DB_SESSION_TABLE
+              valueFrom:
+                secretKeyRef:
+                  name: user-portal-config
+                  key: DB_SESSION_TABLE
+            - name: SESSION_TTL
+              valueFrom:
+                secretKeyRef:
+                  name: user-portal-config
+                  key: SESSION_TTL
+            - name: HONEYPOT_DIVISOR
+              valueFrom:
+                secretKeyRef:
+                  name: user-portal-config
+                  key: HONEYPOT_DIVISOR
+            - name: PORTAL_CONDUCTOR_URL
+              valueFrom:
+                secretKeyRef:
+                  name: user-portal-config
+                  key: PORTAL_CONDUCTOR_URL
           ports:
             - name: http
               containerPort: 3000
