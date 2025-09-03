@@ -1,28 +1,51 @@
-# CyVerse User Portal
+# CyVerse User Portal (Portal2)
 
-The CyVerse User Portal is the place for user account and resource management.
+The CyVerse User Portal is a Next.js application for user account and resource management, built with React and Express.js.
 
-# Requirements
+## Technology Stack
 
-* NGINX (not required for local development)
-* PostgreSQL
-* Node.js / NPM
+- **Frontend**: Next.js 12.3.4, React 17, Material-UI v6
+- **Backend**: Express.js with WebSocket support
+- **Database**: PostgreSQL with Sequelize ORM
+- **Authentication**: Keycloak integration
+- **Build System**: Next.js with custom Express server
 
-# Local Development Installation
+## Requirements
 
-## Install code and dependencies
-```
-git clone git@gitlab.com:cyverse/portal2.git
+- Node.js 20.x
+- PostgreSQL 8.5+
+- NGINX (for production)
+
+## Quick Start
+
+### Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/cyverse-de/portal2.git
 cd portal2
+
+# Install dependencies
 npm install
-```
 
-## Edit configuration
-Copy `src/config-default.json` to `src/config.json` and edit accordingly.
+# Copy environment template
+cp .env.template .env
+# Edit .env with your configuration
 
-## Run server
-```
+# Start development server
 npm run dev
+```
+
+The application will be available at `http://localhost:3000`
+
+### Using Docker/Podman
+
+```bash
+# Build the image
+podman build -t portal2 .
+
+# Run the container
+podman run -p 3000:3000 --env-file .env portal2
 ```
 
 # Ubuntu 20.04 Installation
@@ -67,56 +90,127 @@ cd portal2
 npm install
 ```
 
-## Edit configuration
-### Copy from template
-```
-cp src/config-default.json src/config.json
-```
+## Configuration
 
-### Update the following fields in config.json
-```
-uiBaseUrl
-apiBaseUrl
-wsBaseUrl
+The application uses environment variables for configuration. Copy `.env.template` to `.env` and update the following key variables:
 
-uidNumberOffset
+### Required Configuration
+```bash
+# Server Configuration
+SERVER_PORT=3000
+WS_PORT=3001
 
-hmacKey
+# URLs
+UI_BASE_URL="https://your-domain.com"
+API_BASE_URL="https://your-domain.com/api"
+WS_BASE_URL="wss://your-domain.com/ws"
 
-email.bccNewAccountConfirmation
-email.bccPasswordChangeRequest
-email.bccServiceAccessGranted
-email.bccWorkshopEnrollmentRequest
+# Database
+DB_HOST="your-db-host"
+DB_PORT="5432"
+DB_USER="portal"
+DB_PASSWORD="your-password"
+DB_NAME="portal"
 
-db.user
-db.password
+# Authentication (Keycloak)
+KEYCLOAK_REALM="YourRealm"
+KEYCLOAK_AUTH_URL="https://your-keycloak.com/auth/"
+KEYCLOAK_CLIENT="your-client-id"
+KEYCLOAK_SECRET="your-client-secret"
 
-session.secret
-
-keycloak.*
-
-googleAnalyticsId (optional, null to disable)
-
-sentryDSN (optional, null to disable)
-
-ldap.*
-
-intercom.*
-
-mailchimp.*
-
-mailman.*
+# Security
+HMAC_KEY="your-hmac-key"
+SESSION_SECRET="your-session-secret"
 ```
 
-## Setup PM2
+### Optional Configuration
+```bash
+# Analytics & Monitoring
+GOOGLE_ANALYTICS_ID="your-ga-id"
+SENTRY_DSN="your-sentry-dsn"
 
+# Email Integration
+BCC_NEW_ACCOUNT_CONFIRMATION="admin@your-domain.com"
+
+# External Services
+INTERCOM_ENABLED=false
+MAILCHIMP_ENABLED=false
 ```
+
+## Production Deployment
+
+### Build and Deploy
+```bash
+# Build the application
 npm run build
+
+# Install PM2 process manager
 npm install pm2@latest -g
+
+# Start the application with PM2
 pm2 start npm --name portal2 -- start
+
+# Save PM2 configuration
 pm2 save
-pm2 startup   # manually run the commands that this outputs
+
+# Setup PM2 to start on boot
+pm2 startup   # Follow the instructions output by this command
 ```
+
+### Available Scripts
+
+```bash
+npm run dev      # Start development server with hot reload
+npm run build    # Build production application
+npm start        # Start production server
+npm run format   # Format code with Prettier
+```
+
+## Docker Development
+
+The application includes a multi-stage Dockerfile for containerized deployment:
+
+```bash
+# Build Docker image
+docker build -t portal2 .
+
+# Run with environment file
+docker run -p 3000:3000 --env-file .env portal2
+
+# Using Podman (alternative)
+podman build -t portal2 .
+podman run -p 3000:3000 --env-file .env portal2
+```
+
+### Environment Variables for Docker
+
+Create a `.env` file for container deployment with all required variables. The container runs as a non-root user (`nodejs`) for security.
+
+## Development
+
+### Project Structure
+
+```
+├── src/
+│   ├── server.js           # Express server entry point
+│   ├── api/               # API routes
+│   ├── models/            # Sequelize database models
+│   └── ...
+├── pages/                 # Next.js pages
+├── public/                # Static assets
+├── .next/                 # Next.js build output (generated)
+├── package.json           # Dependencies and scripts
+└── next.config.js         # Next.js configuration
+```
+
+### Key Dependencies
+
+- **Next.js**: React framework for SSR/SSG
+- **Express.js**: Custom server for API routes and WebSocket
+- **Sequelize**: PostgreSQL ORM
+- **Material-UI**: Component library
+- **Keycloak**: Authentication integration
+- **Winston**: Logging framework
 
 ## Setup webserver
 
