@@ -1,0 +1,65 @@
+{
+  "db": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "portal_db",
+    "user": "portal_user",
+    "password": "portal_password",
+    "logging": false,
+    "sessionTable": "session"
+  },
+  "server": {
+    "port": 3000,
+    "isDevelopment": false
+  },
+  "session": {
+    "secret": "your-session-secret-change-this",
+    "ttl": 86400,
+    "secureCookie": true
+  },
+  "keycloak": {
+    "realm": "your-realm",
+    "authUrl": "https://your-keycloak-server/auth",
+    "client": "your-client-id",
+    "secret": "your-client-secret"
+  },
+  "portalConductor": {
+    "url": "https://your-portal-conductor-url"
+  },
+  "terrain": {
+    "url": "https://your-terrain-url",
+    "user": "terrain-user",
+    "password": "terrain-password"
+  },
+  "ui": {
+    "baseUrl": "http://localhost:3000",
+    "wsBaseUrl": "ws://localhost:3001"
+  },
+  "profile": {
+    "updatePeriod": 365,
+    "warningPeriod": 30,
+    "updateText": "Please update your profile",
+    "warningText": "Your profile needs attention"
+  },
+  "features": {
+    "intercomEnabled": false,
+    "mailmanEnabled": false
+  },
+  "sentry": {
+    "dsn": "https://your-sentry-dsn@sentry.io/project-id"
+  },
+  "intercom": {
+    "appId": "your-intercom-app-id",
+    "token": "your-intercom-token",
+    "companyId": "your-intercom-company-id"
+  },
+  "bcc": {
+    "newAccountConfirmation": "admin@example.com",
+    "passwordChangeRequest": "admin@example.com",
+    "serviceAccessGranted": "admin@example.com",
+    "workshopEnrollmentRequest": "admin@example.com"
+  },
+  "honeypot": {
+    "divisor": 7
+  }
+}

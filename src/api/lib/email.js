@@ -1,12 +1,23 @@
 const fs = require('fs');
 const path = require('path');
-const sendmail = require('sendmail')({ silent: false, devPort: process.env["SMTP_PORT"], smtpHost: process.env["SMTP_HOST"] });
+const config = require('./config');
 const { logger } = require('./logging');
 const { UI_WORKSHOPS_URL, UI_REQUESTS_URL, UI_SERVICES_URL, UI_PASSWORD_URL, UI_CONFIRM_EMAIL_URL } = require('../../constants/server');
 
+// Initialize configuration
+config.init();
+const smtpConfig = config.getAll().smtp || {};
+const supportConfig = config.getAll().support || {};
+
+const sendmail = require('sendmail')({ 
+    silent: false, 
+    devPort: smtpConfig.port, 
+    smtpHost: smtpConfig.host 
+});
+
 const TIME_BETWEEN_EMAILS = 30 * 1000 // rate limit to one email sent per 30 seconds
 let nextEmailSendTime = 0
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL
+const SUPPORT_EMAIL = supportConfig.email
 
 function queueEmail(cfg) {
     const now = Date.now();
@@ -51,7 +62,7 @@ function renderEmail({ to, bcc, subject, templateName, fields, message }) {
         to = to.join(',');
 
     const cfg = {
-        from: process.env.SMTP_FROM, //FIXME move into config file
+        from: smtpConfig.from,
         to,
         subject
     };
@@ -76,7 +87,7 @@ function emailNewAccountConfirmation(email, hmac) {
     queueEmail(
         renderEmail({
             to: email, 
-            bcc: process.env.BCC_NEW_ACCOUNT_CONFIRMATION,
+            bcc: config.getBccConfig().newAccountConfirmation,
             subject: 'Please Confirm Your E-Mail Address',
             templateName: 'email_confirmation_signup',
             fields: {
@@ -111,7 +122,7 @@ async function emailPasswordReset(emailAddress, hmac) {
     queueEmail(
         renderEmail({
             to: emailAddress.email, 
-            bcc: process.env.BCC_PASSWORD_CHANGE_REQUEST,
+            bcc: config.getBccConfig().passwordChangeRequest,
             subject: 'CyVerse Password Reset',
             templateName: 'password_reset',
             fields: {
@@ -132,7 +143,7 @@ async function emailServiceAccessGranted(request) {
     queueEmail(
         renderEmail({
             to: user.email, 
-            bcc: process.env.BCC_SERVICE_ACCESS_GRANTED,
+            bcc: config.getBccConfig().serviceAccessGranted,
             subject: 'CyVerse Service Access Granted',
             templateName: 'access_granted',
             fields: {
@@ -158,7 +169,7 @@ async function emailWorkshopEnrollmentRequest(request) {
     queueEmail(
         renderEmail({
             to: workshop.owner.email, 
-            bcc: process.env.BCC_WORKSHOP_ENROLLMENT_REQUEST,
+            bcc: config.getBccConfig().workshopEnrollmentRequest,
             subject: 'CyVerse Workshop Enrollment Request',
             templateName: 'review_workshop_enrollment_request',
             fields: {
@@ -184,7 +195,7 @@ function emailWorkshopEnrollmentConfirmation(request) {
     queueEmail(
         renderEmail({
             to: user.email, 
-            bcc: process.env.BCC_WORKSHOP_ENROLLMENT_REQUEST,
+            bcc: config.getBccConfig().workshopEnrollmentRequest,
             subject: 'CyVerse Workshop Enrollment Approved',
             templateName: 'workshop_enrollment',
             fields: {

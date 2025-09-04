@@ -1,6 +1,5 @@
 // Server-side constants that use configuration
 // NOTE: this module can only be used server-side due to use of configuration manager
-require('../lib/env'); // Ensure env is loaded
 const config = require('../api/lib/config');
 
 const uiConfig = config.getUiConfig();

@@ -11,16 +11,14 @@ import { UserProvider } from '../contexts/user';
 import { ErrorProvider } from '../contexts/error';
 import Custom404 from './404';
 import Custom500 from './500';
+import getConfig from 'next/config';
 
 // Client-side cache, shared for the whole session
 const clientSideEmotionCache = createEmotionCache();
 
-if (process.env.SENTRY_DSN) {
-  Sentry.init({ 
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV
-  });
-}
+// Get runtime config from next.config.js
+const nextConfig = getConfig();
+const { publicRuntimeConfig } = nextConfig || { publicRuntimeConfig: {} };
 
 // From https://github.com/vercel/next.js/blob/canary/examples/with-google-analytics/pages/_document.js
 export function reportWebVitals({ id, name, label, value }) {
@@ -55,6 +53,14 @@ function MyApp(props) {
   }
 
   React.useEffect(() => {
+    // Initialize Sentry on client side only
+    if (publicRuntimeConfig.SENTRY_DSN) {
+      Sentry.init({ 
+        dsn: publicRuntimeConfig.SENTRY_DSN,
+        environment: process.env.NODE_ENV || 'development'
+      });
+    }
+
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {

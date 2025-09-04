@@ -21,11 +21,7 @@ RUN npm ci --include=dev --silent
 # Copy source code
 COPY . .
 
-# Set minimal environment variables needed for build
-ENV NODE_ENV=production \
-    UI_BASE_URL=http://localhost:3000 \
-    API_BASE_URL=http://localhost:3000/api \
-    WS_BASE_URL=ws://localhost:3001
+RUN cp config.template.json config.json
 
 # Build the Next.js application
 RUN npm run build
@@ -55,6 +51,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nodejs:nodejs /app/public ./public
 COPY --from=builder --chown=nodejs:nodejs /app/src ./src
 COPY --from=builder --chown=nodejs:nodejs /app/next.config.js ./next.config.js
+
+# Copy configuration template (will be overridden by mounted config.json in production)
+COPY --chown=nodejs:nodejs config.template.json ./config.json
 
 # Set ownership of the app directory
 RUN chown -R nodejs:nodejs /app

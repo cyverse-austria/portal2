@@ -1,103 +1,57 @@
+const fs = require('fs');
+const path = require('path');
+
 /**
  * Centralized configuration manager with lazy initialization
- * Ensures configuration is loaded once and available before use
+ * Reads configuration from JSON file with environment variable override support
  */
 class ConfigManager {
   constructor() {
     this._config = null;
     this._initialized = false;
+    this._configPath = process.env.CONFIG_PATH || path.resolve(process.cwd(), 'config.json');
   }
 
   /**
    * Initialize configuration once
-   * Environment variables should already be loaded by dotenv
+   * Reads from JSON file only
    */
   init() {
     if (this._initialized) return;
     
-    // Environment variables should already be loaded via dotenv in entry points
-    // No fallback needed - dotenv handles .env loading
-    
-    this._config = {
-      // Database Configuration
-      db: {
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT) || 5432,
-        name: process.env.DB_NAME,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        logging: process.env.DB_LOGGING === 'true',
-        sessionTable: process.env.DB_SESSION_TABLE || 'session'
-      },
-      // Server Configuration
-      server: {
-        port: parseInt(process.env.SERVER_PORT) || 3000,
-        isDevelopment: process.env.NODE_ENV !== 'production'
-      },
-      // Session Configuration
-      session: {
-        secret: process.env.SESSION_SECRET,
-        ttl: parseInt(process.env.SESSION_TTL) || 86400,
-        secureCookie: process.env.SESSION_SECURE_COOKIE === 'true'
-      },
-      // Authentication Configuration
-      keycloak: {
-        realm: process.env.KEYCLOAK_REALM,
-        authUrl: process.env.KEYCLOAK_AUTH_URL,
-        client: process.env.KEYCLOAK_CLIENT,
-        secret: process.env.KEYCLOAK_SECRET
-      },
-      // External Services
-      portalConductor: {
-        url: process.env.PORTAL_CONDUCTOR_URL
-      },
-      terrain: {
-        url: process.env.TERRAIN_URL,
-        user: process.env.TERRAIN_USER,
-        password: process.env.TERRAIN_PASSWORD
-      },
-      // UI Configuration
-      ui: {
-        baseUrl: process.env.UI_BASE_URL,
-        wsBaseUrl: process.env.WS_BASE_URL
-      },
-      // Profile Configuration
-      profile: {
-        updatePeriod: parseInt(process.env.PROFILE_UPDATE_PERIOD) || 365,
-        warningPeriod: parseInt(process.env.PROFILE_WARNING_PERIOD) || 30,
-        updateText: process.env.PROFILE_UPDATE_TEXT,
-        warningText: process.env.PROFILE_WARNING_TEXT
-      },
-      // Feature Flags
-      features: {
-        intercomEnabled: process.env.INTERCOM_ENABLED === 'true',
-        mailmanEnabled: process.env.MAILMAN_ENABLED === 'true'
-      },
-      // External Integrations
-      sentry: {
-        dsn: process.env.SENTRY_DSN
-      },
-      intercom: {
-        appId: process.env.INTERCOM_APP_ID,
-        token: process.env.INTERCOM_TOKEN,
-        companyId: process.env.INTERCOM_COMPANY_ID
-      },
-      // Email Configuration
-      bcc: {
-        newAccountConfirmation: process.env.BCC_NEW_ACCOUNT_CONFIRMATION,
-        passwordChangeRequest: process.env.BCC_PASSWORD_CHANGE_REQUEST,
-        serviceAccessGranted: process.env.BCC_SERVICE_ACCESS_GRANTED,
-        workshopEnrollmentRequest: process.env.BCC_WORKSHOP_ENROLLMENT_REQUEST
-      },
-      // Security
-      honeypot: {
-        divisor: parseInt(process.env.HONEYPOT_DIVISOR) || 7
-      }
-    };
-    
-    this._initialized = true;
-    this._validateConfig();
+    try {
+      // Load configuration from JSON file
+      this._config = this._loadFromJsonFile();
+      
+      this._initialized = true;
+      this._validateConfig();
+    } catch (error) {
+      throw new Error(`Failed to load configuration: ${error.message}`);
+    }
   }
+
+  /**
+   * Load configuration from JSON file
+   * @private
+   */
+  _loadFromJsonFile() {
+    if (!fs.existsSync(this._configPath)) {
+      throw new Error(`Configuration file not found: ${this._configPath}`);
+    }
+
+    try {
+      const configData = fs.readFileSync(this._configPath, 'utf8');
+      const config = JSON.parse(configData);
+      
+      // Add computed values
+      config.server.isDevelopment = process.env.NODE_ENV !== 'production';
+      
+      return config;
+    } catch (error) {
+      throw new Error(`Failed to parse configuration file: ${error.message}`);
+    }
+  }
+
 
   /**
    * Validate that required configuration is present
@@ -105,21 +59,21 @@ class ConfigManager {
    */
   _validateConfig() {
     // Critical configuration that must be present
-    const required = {
-      'DB_HOST': this._config.db.host,
-      'DB_PORT': this._config.db.port,
-      'DB_NAME': this._config.db.name,
-      'DB_USER': this._config.db.user,
-      'DB_PASSWORD': this._config.db.password,
-      'SESSION_SECRET': this._config.session.secret,
-      'KEYCLOAK_REALM': this._config.keycloak.realm,
-      'KEYCLOAK_AUTH_URL': this._config.keycloak.authUrl,
-      'KEYCLOAK_CLIENT': this._config.keycloak.client,
-      'KEYCLOAK_SECRET': this._config.keycloak.secret,
-      'UI_BASE_URL': this._config.ui.baseUrl
-    };
+    const required = [
+      ['db.host', this._config.db?.host],
+      ['db.port', this._config.db?.port],
+      ['db.name', this._config.db?.name],
+      ['db.user', this._config.db?.user],
+      ['db.password', this._config.db?.password],
+      ['session.secret', this._config.session?.secret],
+      ['keycloak.realm', this._config.keycloak?.realm],
+      ['keycloak.authUrl', this._config.keycloak?.authUrl],
+      ['keycloak.client', this._config.keycloak?.client],
+      ['keycloak.secret', this._config.keycloak?.secret],
+      ['ui.baseUrl', this._config.ui?.baseUrl]
+    ];
 
-    const missing = Object.entries(required)
+    const missing = required
       .filter(([, value]) => !value)
       .map(([key]) => key);
 
@@ -139,20 +93,20 @@ class ConfigManager {
     const errors = [];
 
     // Validate DB port is a number
-    if (isNaN(this._config.db.port)) {
-      errors.push('DB_PORT must be a number');
+    if (this._config.db?.port && isNaN(this._config.db.port)) {
+      errors.push('db.port must be a number');
     }
 
     // Validate server port is a number
-    if (isNaN(this._config.server.port)) {
-      errors.push('SERVER_PORT must be a number');
+    if (this._config.server?.port && isNaN(this._config.server.port)) {
+      errors.push('server.port must be a number');
     }
 
     // Validate URLs
     const urlFields = [
-      ['UI_BASE_URL', this._config.ui.baseUrl],
-      ['WS_BASE_URL', this._config.ui.wsBaseUrl],
-      ['KEYCLOAK_AUTH_URL', this._config.keycloak.authUrl]
+      ['ui.baseUrl', this._config.ui?.baseUrl],
+      ['ui.wsBaseUrl', this._config.ui?.wsBaseUrl],
+      ['keycloak.authUrl', this._config.keycloak?.authUrl]
     ];
 
     urlFields.forEach(([name, url]) => {
@@ -163,9 +117,9 @@ class ConfigManager {
 
     // Validate optional URLs
     const optionalUrls = [
-      ['TERRAIN_URL', this._config.terrain.url],
-      ['PORTAL_CONDUCTOR_URL', this._config.portalConductor.url],
-      ['SENTRY_DSN', this._config.sentry.dsn]
+      ['terrain.url', this._config.terrain?.url],
+      ['portalConductor.url', this._config.portalConductor?.url],
+      ['sentry.dsn', this._config.sentry?.dsn]
     ];
 
     optionalUrls.forEach(([name, url]) => {

@@ -28,9 +28,9 @@ cd portal2
 # Install dependencies
 npm install
 
-# Copy environment template
-cp .env.template .env
-# Edit .env with your configuration
+# Copy configuration template
+cp config.template.json config.json
+# Edit config.json with your configuration
 
 # Start development server
 npm run dev
@@ -44,8 +44,8 @@ The application will be available at `http://localhost:3000`
 # Build the image
 podman build -t portal2 .
 
-# Run the container
-podman run -p 3000:3000 --env-file .env portal2
+# Run the container with mounted config file
+podman run -p 3000:3000 -v ./config.json:/app/config.json:ro portal2
 ```
 
 # Ubuntu 20.04 Installation
@@ -92,49 +92,54 @@ npm install
 
 ## Configuration
 
-The application uses environment variables for configuration. Copy `.env.template` to `.env` and update the following key variables:
+The application uses JSON configuration files. Copy `config.template.json` to `config.json` and update the configuration values.
 
 ### Required Configuration
-```bash
-# Server Configuration
-SERVER_PORT=3000
-WS_PORT=3001
 
-# URLs
-UI_BASE_URL="https://your-domain.com"
-API_BASE_URL="https://your-domain.com/api"
-WS_BASE_URL="wss://your-domain.com/ws"
+Edit your `config.json` file with the required settings:
 
-# Database
-DB_HOST="your-db-host"
-DB_PORT="5432"
-DB_USER="portal"
-DB_PASSWORD="your-password"
-DB_NAME="portal"
-
-# Authentication (Keycloak)
-KEYCLOAK_REALM="YourRealm"
-KEYCLOAK_AUTH_URL="https://your-keycloak.com/auth/"
-KEYCLOAK_CLIENT="your-client-id"
-KEYCLOAK_SECRET="your-client-secret"
-
-# Security
-HMAC_KEY="your-hmac-key"
-SESSION_SECRET="your-session-secret"
-```
-
-### Optional Configuration
-```bash
-# Analytics & Monitoring
-GOOGLE_ANALYTICS_ID="your-ga-id"
-SENTRY_DSN="your-sentry-dsn"
-
-# Email Integration
-BCC_NEW_ACCOUNT_CONFIRMATION="admin@your-domain.com"
-
-# External Services
-INTERCOM_ENABLED=false
-MAILCHIMP_ENABLED=false
+```json
+{
+  "server": {
+    "port": 3000
+  },
+  "ui": {
+    "baseUrl": "https://your-domain.com",
+    "wsBaseUrl": "wss://your-domain.com/ws"
+  },
+  "db": {
+    "host": "your-db-host",
+    "port": 5432,
+    "name": "portal",
+    "user": "portal",
+    "password": "your-password"
+  },
+  "keycloak": {
+    "realm": "YourRealm",
+    "authUrl": "https://your-keycloak.com/auth/",
+    "client": "your-client-id",
+    "secret": "your-client-secret"
+  },
+  "session": {
+    "secret": "your-session-secret"
+  },
+  "security": {
+    "hmacKey": "your-hmac-key"
+  },
+  "external": {
+    "googleAnalyticsId": "your-ga-id"
+  },
+  "sentry": {
+    "dsn": "your-sentry-dsn"
+  },
+  "bcc": {
+    "newAccountConfirmation": "admin@your-domain.com"
+  },
+  "features": {
+    "intercomEnabled": false,
+    "mailmanEnabled": false
+  }
+}
 ```
 
 ## Production Deployment
@@ -175,16 +180,16 @@ The application includes a multi-stage Dockerfile for containerized deployment:
 docker build -t portal2 .
 
 # Run with environment file
-docker run -p 3000:3000 --env-file .env portal2
+docker run -p 3000:3000 -v ./config.json:/app/config.json:ro portal2
 
 # Using Podman (alternative)
 podman build -t portal2 .
-podman run -p 3000:3000 --env-file .env portal2
+podman run -p 3000:3000 -v ./config.json:/app/config.json:ro portal2
 ```
 
 ### Environment Variables for Docker
 
-Create a `.env` file for container deployment with all required variables. The container runs as a non-root user (`nodejs`) for security.
+Create a `config.json` file for container deployment with all required settings. The container runs as a non-root user (`nodejs`) for security. Mount your configuration file into the container at `/app/config.json`.
 
 ## Development
 

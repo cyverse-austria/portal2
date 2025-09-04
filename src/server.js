@@ -1,5 +1,3 @@
-// Load environment variables first
-require('./lib/env')
 
 const express = require('express')
 const cors = require('cors')
@@ -14,16 +12,22 @@ const { WS_CONNECTED } = require('./constants/client')
 const { getUserID, getUserToken, requireAuth } = require('./api/lib/auth')
 const PortalAPI = require('./lib/apiClient')
 const ws = require('ws')
+const config = require('./api/lib/config')
 
-const isDevelopment = process.env.NODE_ENV !== 'production'
+// Initialize configuration
+config.init();
+const serverConfig = config.getServerConfig();
+const sentryConfig = config.getSentryConfig();
+
+const isDevelopment = serverConfig.isDevelopment;
 const app = next({ dev: isDevelopment })
 const nextHandler = app.getRequestHandler()
 
 // Configure Sentry error tracking -- should be done as early as possible
-if (process.env.SENTRY_DSN) {
+if (sentryConfig.dsn) {
     Sentry.init({
-        dsn: process.env.SENTRY_DSN,
-        environment: process.env.NODE_ENV,
+        dsn: sentryConfig.dsn,
+        environment: process.env.NODE_ENV || (isDevelopment ? 'development' : 'production'),
     })
 } else {
     console.log('Sentry is disabled')
@@ -45,36 +49,40 @@ function buildPostgresUrl(settings) {
 
 // Configure the session store
 const pgSession = pgsimple(session)
+const dbConfig = config.getDbConfig();
 const pgUrl = buildPostgresUrl({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    host: dbConfig.host,
+    port: dbConfig.port,
+    database: dbConfig.name,
+    user: dbConfig.user,
+    password: dbConfig.password,
 })
+const sessionConfig = config.getSessionConfig();
 const sessionStore = new pgSession({
     conString: pgUrl,
-    tableName: process.env.DB_SESSION_TABLE,
-    ttl: process.env.SESSION_TTL,
+    tableName: dbConfig.sessionTable,
+    ttl: sessionConfig.ttl,
     cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 days
 })
 
 // Configure the Keycloak client
 Keycloak.prototype.accessDenied = function (request, response) {
     console.log('Access denied, redirecting !!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    response.redirect(process.env.UI_BASE_URL)
+    const uiConfig = config.getUiConfig();
+    response.redirect(uiConfig.baseUrl)
     //response.status(403);
     //response.end('Access denied');
 }
+const keycloakConfig = config.getKeycloakConfig();
 const keycloakClient = new Keycloak(
     { store: sessionStore },
     {
-        realm: process.env.KEYCLOAK_REALM,
-        'auth-server-url': process.env.KEYCLOAK_AUTH_URL,
+        realm: keycloakConfig.realm,
+        'auth-server-url': keycloakConfig.authUrl,
         'ssl-required': 'all',
-        resource: process.env.KEYCLOAK_CLIENT,
+        resource: keycloakConfig.client,
         credentials: {
-            secret: process.env.KEYCLOAK_SECRET,
+            secret: keycloakConfig.secret,
         },
         'confidential-port': 0,
     }
@@ -91,7 +99,7 @@ app.prepare()
         server.use(requestLogger)
 
         // Setup Sentry error handling
-        if (process.env.SENTRY_DSN) server.use(Sentry.Handlers.requestHandler())
+        if (sentryConfig.dsn) server.use(Sentry.Handlers.requestHandler())
 
         // Support CORS requests -- needed for service icon image requests
         server.use(cors())
@@ -103,13 +111,11 @@ app.prepare()
         server.use(
             session({
                 store: sessionStore,
-                secret: process.env.SESSION_SECRET,
+                secret: sessionConfig.secret,
                 resave: false,
                 saveUninitialized: true,
                 cookie: {
-                    secure:
-                        process.env.SESSION_SECURE_COOKIE.toLowerCase() ===
-                        'true',
+                    secure: sessionConfig.secureCookie,
                 },
             })
         )
@@ -144,7 +150,7 @@ app.prepare()
         server.use(async (req, _, next) => {
             const token = getUserToken(req)
             req.api = new PortalAPI({
-                baseUrl: process.env.API_BASE_URL,
+                baseUrl: config.getUiConfig().baseUrl + '/api',
                 token: token ? token.token : null,
             })
             next()
@@ -250,13 +256,13 @@ app.prepare()
         })
 
         // Catch errors
-        if (process.env.SENTRY_DSN) server.use(Sentry.Handlers.errorHandler())
+        if (sentryConfig.dsn) server.use(Sentry.Handlers.errorHandler())
 
-        server.listen(process.env.SERVER_PORT, err => {
+        server.listen(serverConfig.port, err => {
             if (err) throw err
             if (isDevelopment)
                 console.log('!!!!!!!!! RUNNING IN DEV MODE !!!!!!!!!!')
-            console.log(`Ready on port ${process.env.SERVER_PORT}`)
+            console.log(`Ready on port ${serverConfig.port}`)
         })
     })
     .catch(exception => {
