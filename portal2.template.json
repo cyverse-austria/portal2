@@ -50,13 +50,33 @@
   "intercom": {
     "appId": "your-intercom-app-id",
     "token": "your-intercom-token",
-    "companyId": "your-intercom-company-id"
+    "companyId": "your-intercom-company-id",
+    "adminUserPortalBotId": "your-admin-user-portal-bot-id",
+    "adminTier1AtmosphereId": "your-admin-tier1-atmosphere-id",
+    "adminTier1ScienceTeamId": "your-admin-tier1-science-team-id",
+    "adminTier1DataWatchId": "your-admin-tier1-data-watch-id"
   },
   "bcc": {
     "newAccountConfirmation": "admin@example.com",
     "passwordChangeRequest": "admin@example.com",
     "serviceAccessGranted": "admin@example.com",
     "workshopEnrollmentRequest": "admin@example.com"
+  },
+  "external": {
+    "tourUrl": "https://learning.cyverse.org/mooc/",
+    "googleAnalyticsId": "your-google-analytics-id"
+  },
+  "security": {
+    "hmacKey": "your-hmac-key-change-this",
+    "uidNumberOffset": 2831
+  },
+  "smtp": {
+    "from": "support@example.com",
+    "host": "localhost",
+    "port": 25
+  },
+  "support": {
+    "email": "support@example.com"
   },
   "honeypot": {
     "divisor": 7
