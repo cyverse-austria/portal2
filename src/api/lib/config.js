@@ -9,7 +9,7 @@ class ConfigManager {
   constructor() {
     this._config = null;
     this._initialized = false;
-    this._configPath = process.env.CONFIG_PATH || path.resolve(process.cwd(), 'config.json');
+    this._configPath = process.env.CONFIG_PATH || path.resolve(process.cwd(), 'portal2.json');
   }
 
   /**

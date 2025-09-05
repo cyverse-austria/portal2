@@ -53,7 +53,7 @@ function validateStartupConfiguration() {
         
         // Test feature flags
         const features = config.getFeatures();
-        logger.info(`Feature flags: Intercom=${features.intercomEnabled}, Mailman=${features.mailmanEnabled}`);
+        logger.info(`Feature flags: Intercom=${features.intercomEnabled}`);
         
         // Test optional integrations
         const sentryConfig = config.getSentryConfig();
