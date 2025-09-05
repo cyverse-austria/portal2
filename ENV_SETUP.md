@@ -126,8 +126,6 @@ All configuration is stored in JSON format in the `portal2.json` file. See `port
 - `profile.warningPeriod` - Days before showing update warning
 - `profile.*Text` - User-facing messages
 
-### 🧪 Development & Testing
-- `development.nativeWorkflowImageId` - Docker image for workflows
 
 ## Environment-Specific Setup
 
