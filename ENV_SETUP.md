@@ -6,8 +6,8 @@ This document explains how to set up configuration for the Portal2 application.
 
 1. **Copy the configuration template and customize:**
    ```bash
-   cp config.template.json config.json
-   # Edit config.json with your configuration values
+   cp portal2.template.json portal2.json
+   # Edit portal2.json with your configuration values
    ```
 
 2. **Fill in required values** (see [Required Configuration](#required-configuration) below)
@@ -20,13 +20,13 @@ This document explains how to set up configuration for the Portal2 application.
 ## Configuration System
 
 The application uses JSON configuration files:
-- `config.json` - Primary configuration file (NOT committed to git)
-- `config.template.json` - Template with example values
+- `portal2.json` - Primary configuration file (NOT committed to git)
+- `portal2.template.json` - Template with example values
 - Set `CONFIG_PATH` environment variable to specify a custom config file location
 
 ## Required Configuration
 
-These settings **must** be configured in your `config.json` file for the application to start:
+These settings **must** be configured in your `portal2.json` file for the application to start:
 
 ### Database Configuration
 ```json
@@ -73,12 +73,12 @@ These settings **must** be configured in your `config.json` file for the applica
 You can specify a custom configuration file location:
 ```bash
 # Use custom config file location
-CONFIG_PATH=/path/to/custom/config.json
+CONFIG_PATH=/path/to/custom/portal2.json
 ```
 
 ## Configuration Sections
 
-All configuration is stored in JSON format in the `config.json` file. See `config.template.json` for the complete structure and default values.
+All configuration is stored in JSON format in the `portal2.json` file. See `portal2.template.json` for the complete structure and default values.
 
 ### 🖥️ Server Configuration
 - `server.port` - Main application port (default: 3000)
@@ -118,8 +118,6 @@ All configuration is stored in JSON format in the `config.json` file. See `confi
 
 ### 💬 Integrations
 - `intercom.*` - Intercom chat widget configuration
-- `mailman.*` - Mailing list integration
-- `features.mailmanEnabled` - Enable/disable mailman integration
 - `external.googleAnalyticsId` - GA tracking ID
 - `sentry.dsn` - Error tracking
 
@@ -136,9 +134,9 @@ All configuration is stored in JSON format in the `config.json` file. See `confi
 ### Development Setup
 ```bash
 # Copy and customize the configuration template
-cp config.template.json config.json
+cp portal2.template.json portal2.json
 
-# Edit config.json with your local settings:
+# Edit portal2.json with your local settings:
 # - Local database credentials
 # - Development Keycloak settings  
 # - Disable external services
@@ -148,9 +146,9 @@ cp config.template.json config.json
 ### Production Setup
 ```bash
 # Copy and customize the configuration template
-cp config.template.json config.json
+cp portal2.template.json portal2.json
 
-# Edit config.json with production values:
+# Edit portal2.json with production values:
 # - Production database and URLs
 # - Real Keycloak configuration
 # - Strong session secrets
@@ -166,7 +164,7 @@ docker-compose -f docker-compose.yml -f docker-compose.local.yml up
 ## Security Best Practices
 
 ### 🔒 Secret Management
-- **Never commit `config.json`** - It's in `.gitignore`
+- **Never commit `portal2.json`** - It's in `.gitignore`
 - Use strong, random values for `session.secret` and `security.hmacKey`
 - Rotate secrets regularly in production
 - Use environment-specific secrets (different for dev/staging/prod)
@@ -198,8 +196,8 @@ The application validates configuration on startup and will:
 
 ### Configuration Not Loading
 ```bash
-# Check if config.json exists
-ls -la config.json
+# Check if portal2.json exists
+ls -la portal2.json
 
 # Test configuration loading
 node -e "const config = require('./src/api/lib/config'); config.init(); console.log('DB Host:', config.getDbConfig().host)"
@@ -230,7 +228,7 @@ npm run dev 2>&1 | grep "Missing required"
 
 ## Files Reference
 
-- `config.json` - Your configuration file (copy and customize from config.template.json, not committed to git)
+- `portal2.json` - Your configuration file (copy and customize from portal2.template.json, not committed to git)
 
 ## Next Steps
 

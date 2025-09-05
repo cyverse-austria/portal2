@@ -39,8 +39,8 @@ spec:
           secret:
             secretName: user-portal-config
             items:
-              - key: config.json
-                path: config.json
+              - key: portal2.json
+                path: portal2.json
       containers:
         - name: portal
           image: harbor.cyverse.org/de/portal2
@@ -52,7 +52,7 @@ spec:
                   name: timezone
                   key: timezone
             - name: CONFIG_PATH
-              value: "/etc/cyverse/portal2/config.json"
+              value: "/etc/cyverse/portal2/portal2.json"
             - name: NODE_ENV
               value: "production"
           volumeMounts:

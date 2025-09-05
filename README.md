@@ -29,8 +29,8 @@ cd portal2
 npm install
 
 # Copy configuration template
-cp config.template.json config.json
-# Edit config.json with your configuration
+cp portal2.template.json portal2.json
+# Edit portal2.json with your configuration
 
 # Start development server
 npm run dev
@@ -45,7 +45,7 @@ The application will be available at `http://localhost:3000`
 podman build -t portal2 .
 
 # Run the container with mounted config file
-podman run -p 3000:3000 -v ./config.json:/app/config.json:ro portal2
+podman run -p 3000:3000 -v ./portal2.json:/app/portal2.json:ro portal2
 ```
 
 # Ubuntu 20.04 Installation
@@ -92,11 +92,11 @@ npm install
 
 ## Configuration
 
-The application uses JSON configuration files. Copy `config.template.json` to `config.json` and update the configuration values.
+The application uses JSON configuration files. Copy `portal2.template.json` to `portal2.json` and update the configuration values.
 
 ### Required Configuration
 
-Edit your `config.json` file with the required settings:
+Edit your `portal2.json` file with the required settings:
 
 ```json
 {
@@ -136,8 +136,7 @@ Edit your `config.json` file with the required settings:
     "newAccountConfirmation": "admin@your-domain.com"
   },
   "features": {
-    "intercomEnabled": false,
-    "mailmanEnabled": false
+    "intercomEnabled": false
   }
 }
 ```
@@ -180,16 +179,16 @@ The application includes a multi-stage Dockerfile for containerized deployment:
 docker build -t portal2 .
 
 # Run with environment file
-docker run -p 3000:3000 -v ./config.json:/app/config.json:ro portal2
+docker run -p 3000:3000 -v ./portal2.json:/app/portal2.json:ro portal2
 
 # Using Podman (alternative)
 podman build -t portal2 .
-podman run -p 3000:3000 -v ./config.json:/app/config.json:ro portal2
+podman run -p 3000:3000 -v ./portal2.json:/app/portal2.json:ro portal2
 ```
 
 ### Environment Variables for Docker
 
-Create a `config.json` file for container deployment with all required settings. The container runs as a non-root user (`nodejs`) for security. Mount your configuration file into the container at `/app/config.json`.
+Create a `portal2.json` file for container deployment with all required settings. The container runs as a non-root user (`nodejs`) for security. Mount your configuration file into the container at `/app/portal2.json`.
 
 ## Development
 

@@ -6,17 +6,17 @@ const fs = require('fs');
 const path = require('path');
 
 // Load configuration from JSON file
-const configPath = process.env.CONFIG_PATH || path.resolve(process.cwd(), 'config.json');
+const configPath = process.env.CONFIG_PATH || path.resolve(process.cwd(), 'portal2.json');
 let config = {};
 if (fs.existsSync(configPath)) {
   try {
     const configData = fs.readFileSync(configPath, 'utf8');
     config = JSON.parse(configData);
   } catch (error) {
-    console.warn('Failed to load config.json, using empty config:', error.message);
+    console.warn('Failed to load portal2.json, using empty config:', error.message);
   }
 } else {
-  console.warn('config.json not found, using empty config');
+  console.warn('portal2.json not found, using empty config');
 }
 
 // Helper function to get config value from JSON only

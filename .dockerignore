@@ -4,8 +4,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Configuration files (use mounted config.json instead)
-config.json
+# Configuration files (use mounted portal2.json instead)
+portal2.json
 
 # Git
 .git/

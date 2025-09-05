@@ -21,7 +21,7 @@ RUN npm ci --include=dev --silent
 # Copy source code
 COPY . .
 
-RUN cp config.template.json config.json
+RUN cp portal2.template.json portal2.json
 
 # Build the Next.js application
 RUN npm run build
@@ -52,8 +52,8 @@ COPY --from=builder --chown=nodejs:nodejs /app/public ./public
 COPY --from=builder --chown=nodejs:nodejs /app/src ./src
 COPY --from=builder --chown=nodejs:nodejs /app/next.config.js ./next.config.js
 
-# Copy configuration template (will be overridden by mounted config.json in production)
-COPY --chown=nodejs:nodejs config.template.json ./config.json
+# Copy configuration template (will be overridden by mounted portal2.json in production)
+COPY --chown=nodejs:nodejs portal2.template.json ./portal2.json
 
 # Set ownership of the app directory
 RUN chown -R nodejs:nodejs /app
