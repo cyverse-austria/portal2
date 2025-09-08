@@ -19,6 +19,11 @@ const PasswordResetRequest = models.account_passwordresetrequest;
 const EmailAddressToMailingList = models.api_emailaddressmailinglist;
 const MailingList = models.api_mailinglist;
 
+// Health/readiness check endpoint
+router.get('/ready', (req, res) => {
+    res.status(200).json({ status: 'ready' });
+});
+
 //TODO move into module
 const lowerEqualTo = (key, val) => sequelize.where(sequelize.fn('lower', sequelize.col(key)), val.toLowerCase());
 const like = (key, val) => sequelize.where(sequelize.fn('lower', sequelize.col(key)), { [sequelize.Op.like]: '%' + val.toLowerCase() + '%' });

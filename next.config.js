@@ -1,6 +1,11 @@
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env.ANALYZE === "true",
-});
+let withBundleAnalyzer = (config) => config;
+try {
+  withBundleAnalyzer = require("@next/bundle-analyzer")({
+    enabled: process.env.ANALYZE === "true",
+  });
+} catch (error) {
+  console.warn("Bundle analyzer not available:", error.message);
+}
 
 const fs = require('fs');
 const path = require('path');

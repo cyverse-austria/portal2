@@ -37,7 +37,7 @@ spec:
       volumes:
         - name: config-volume
           secret:
-            secretName: user-portal-config
+            secretName: service-configs
             items:
               - key: portal2.json
                 path: portal2.json
@@ -64,7 +64,7 @@ spec:
               containerPort: 3000
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/ready
               port: 3000
 ---
 apiVersion: v1
