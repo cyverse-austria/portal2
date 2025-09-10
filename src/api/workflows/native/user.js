@@ -17,7 +17,7 @@ async function userCreationWorkflow(user) {
         last_name: user.last_name,
         email: user.email,
         username: user.username,
-        user_id: user.username,
+        user_uid: user.username,
         password: user.password,
         department: user.department,
         organization: user.institution,
@@ -51,10 +51,9 @@ async function userPasswordUpdateWorkflow(user) {
     }
 
     try {
-        const response = await axios.post(`${baseUrl}/users/${user.username}/password`, null, {
-            params: {
-                password: user.password
-            },
+        const response = await axios.post(`${baseUrl}/users/${user.username}/password`, {
+            password: user.password
+        }, {
             headers: {
                 'Content-Type': 'application/json'
             }
