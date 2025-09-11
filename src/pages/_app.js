@@ -9,6 +9,7 @@ import theme from '../theme';
 import { APIProvider } from '../contexts/api';
 import { UserProvider } from '../contexts/user';
 import { ErrorProvider } from '../contexts/error';
+import { SuccessProvider } from '../contexts/success';
 import Custom404 from './404';
 import Custom500 from './500';
 import getConfig from 'next/config';
@@ -80,7 +81,9 @@ function MyApp(props) {
                 <meta name="viewport" content="initial-scale=1, width=device-width" />
               </Head>
               <ErrorProvider>
-                <Component {...pageProps} />
+                <SuccessProvider>
+                  <Component {...pageProps} />
+                </SuccessProvider>
               </ErrorProvider>
             </UserProvider>
           </APIProvider>

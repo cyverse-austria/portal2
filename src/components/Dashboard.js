@@ -13,6 +13,7 @@ import { CustomIntercom } from './CustomIntercom'
 import { useUser } from '../contexts/user'
 import { useAPI } from '../contexts/api'
 import { useError } from '../contexts/error'
+import { useSuccess } from '../contexts/success'
 // import { ACCOUNT_UPDATE_REMINDER_COOKIE } from '../constants'
 
 const drawerWidth = 235
@@ -130,6 +131,7 @@ export default function Dashboard(props) {
   const [user, setUser] = useUser()
   const api = useAPI()
   const [error, setError] = useError()
+  const [success, setSuccess] = useSuccess()
   const router = useRouter()
 
   const isSmallScreen = useMediaQuery(theme => theme.breakpoints.down('sm'));
@@ -260,6 +262,19 @@ export default function Dashboard(props) {
             Oops! An error occurred:
           </AlertTitle>
           {error}
+        </Alert>
+      </Snackbar>
+      <Snackbar 
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        open={!!success}
+        autoHideDuration={6000}
+        onClose={() => setSuccess(null)}
+      >
+        <Alert elevation={6} variant="filled" severity="success" onClose={() => setSuccess(null)}>
+          {success}
         </Alert>
       </Snackbar>
       {/* <Snackbar

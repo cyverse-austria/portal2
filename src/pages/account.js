@@ -8,6 +8,7 @@ import { isEmail, isEmpty } from 'validator'
 import { useUser } from '../contexts/user'
 import { useAPI } from '../contexts/api'
 import { useError } from '../contexts/error'
+import { useSuccess } from '../contexts/success'
 import { sortCountries } from '../lib/misc'
 import { makeStyles } from '../styles/tss'
 const properties = require('../user-properties.json')
@@ -39,6 +40,7 @@ const Account = () => {
   const router = useRouter()
   const api = useAPI()
   const [_, setError] = useError()
+  const [__, setSuccess] = useSuccess()
   const [user, setUser] = useUser()
   const [sentEmails, setSentEmails] = useState([])
   const [institutions, setInstitutions] = useState()
@@ -60,6 +62,8 @@ const Account = () => {
         })
         if (res !== 'success')
           setError(res)
+        else
+          setSuccess('Password updated successfully!')
         return
       }
 
