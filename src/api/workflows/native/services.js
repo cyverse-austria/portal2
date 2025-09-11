@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const axios = require('axios')
 const { logger } = require('../../lib/logging')
 const config = require('../../lib/config')
+const { joinUrl } = require('../../lib/url')
 const models = require('../../models')
 const MailingList = models.api_mailinglist
 const EmailAddress = models.account_emailaddress
@@ -34,7 +35,7 @@ async function serviceRegistrationWorkflow(request) {
 
     try {
         const response = await axios.post(
-            `${baseUrl}/services/register`,
+            joinUrl(baseUrl, 'services', 'register'),
             requestBody,
             {
                 headers: {

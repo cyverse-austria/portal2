@@ -1,10 +1,7 @@
-// cURL is used for HTTP requests instead of native request libraries
-const fs = require('fs')
-const { exec, execFile, execSync } = require('child_process')
-var crypto = require('crypto')
 const config = require('../../lib/config')
+const { joinUrl } = require('../../lib/url')
 
-function terrainSubmitViceAccessRequest(token, user, usage) {
+async function terrainSubmitViceAccessRequest(token, user, usage) {
     const data = {
         name: user.first_name + ' ' + user.last_name,
         email: user.email,
@@ -12,18 +9,16 @@ function terrainSubmitViceAccessRequest(token, user, usage) {
         concurrent_jobs: 2, //FIXME hardcoded
     }
 
-    return runFile('curl', [
-        '--request',
-        'POST',
-        '--location',
-        '--header',
-        `Authorization: Bearer ${token}`,
-        '--header',
-        'Content-Type: application/json',
-        '--data',
-        JSON.stringify(data),
-        `${config.getTerrainConfig().url}/requests/vice`
-    ])
+    const response = await fetch(joinUrl(config.getTerrainConfig().url, 'requests', 'vice'), {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+
+    return response;
 }
 
 module.exports = {

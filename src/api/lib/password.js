@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('crypto')
 
 // Ported from UP1 /account/models/user.py
 function checkLDAPPassword(hash, secret) {
@@ -11,7 +11,7 @@ function checkLDAPPassword(hash, secret) {
     // The password+salt buffer is also base64-encoded
     // Decode and split the digest and salt
     digest_salt = Buffer.from(digest_salt_b64, 'base64').toString()
-    digest = digest_salt.substr(0,20)
+    digest = digest_salt.substr(0, 20)
     salt = digest_salt.substr(20)
 
     const sha = crypto.createHash('sha1')
@@ -23,33 +23,49 @@ function checkLDAPPassword(hash, secret) {
 // Check Django-hashed password
 // From https://stackoverflow.com/questions/17544537/django-pbkdf2-sha256-js-implementation
 function checkDjangoPassword(hash, secret) {
-    const parts = hash.split('$');
+    const parts = hash.split('$')
     if (parts.length < 4) {
-        console.log('checkDjangoPassword: invalid hash:', hash);
-        return false;
+        console.log('checkDjangoPassword: invalid hash:', hash)
+        return false
     }
 
-    const iterations = parts[1]*1;
-    const salt = parts[2];
-    return crypto.pbkdf2Sync(secret, Buffer.from(salt), iterations, 32, 'sha256').toString('base64') === parts[3];
+    const iterations = parts[1] * 1
+    const salt = parts[2]
+    return (
+        crypto
+            .pbkdf2Sync(secret, Buffer.from(salt), iterations, 32, 'sha256')
+            .toString('base64') === parts[3]
+    )
 }
 
 // Migrated from v1: /account/serializers/password_change.py
 function checkPassword(hash, secret) {
-    if (hash.startsWith('{SSHA}'))
-        return checkLDAPPassword(hash, secret);
-    
-    return checkDjangoPassword(hash, secret);
+    console.log(hash)
+
+    if (hash.startsWith('{SSHA}')) {
+        console.log('Using LDAP password check')
+        return checkLDAPPassword(hash, secret)
+    }
+
+    console.log('Using Django password check')
+    return checkDjangoPassword(hash, secret)
 }
 
 function encodePassword(secret) {
-    const salt = "Bf3IBq3m4YXf"; //FIXME move to config file?
+    const salt = 'Bf3IBq3m4YXf' //FIXME move to config file?
     return [
-        'pbkdf2_sha256', 
-        '36000', 
+        'pbkdf2_sha256',
+        '36000',
         salt,
-        crypto.pbkdf2Sync(secret, Buffer.from(salt), 36000, 32, 'sha256').toString('base64')
-    ].join('$');
+        crypto
+            .pbkdf2Sync(secret, Buffer.from(salt), 36000, 32, 'sha256')
+            .toString('base64'),
+    ].join('$')
 }
 
-module.exports = { checkLDAPPassword, checkDjangoPassword, checkPassword, encodePassword };
+module.exports = {
+    checkLDAPPassword,
+    checkDjangoPassword,
+    checkPassword,
+    encodePassword,
+}

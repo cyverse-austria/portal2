@@ -1,6 +1,7 @@
 const axios = require('axios')
 const { logger } = require('../../lib/logging')
 const config = require('../../lib/config')
+const { joinUrl } = require('../../lib/url')
 
 async function userCreationWorkflow(user) {
     if (!user) throw 'Missing required property'
@@ -21,19 +22,22 @@ async function userCreationWorkflow(user) {
         password: user.password,
         department: user.department,
         organization: user.institution,
-        title: user.occupation.name
+        title: user.occupation.name,
     }
 
     try {
-        const response = await axios.post(`${baseUrl}/users`, requestBody, {
+        const response = await axios.post(joinUrl(baseUrl, 'users'), requestBody, {
             headers: {
-                'Content-Type': 'application/json'
-            }
+                'Content-Type': 'application/json',
+            },
         })
         logger.info(`User creation request successful for ${user.username}`)
         return response.data
     } catch (error) {
-        logger.error(`User creation request failed for ${user.username}:`, error.message)
+        logger.error(
+            `User creation request failed for ${user.username}:`,
+            error.message
+        )
         throw error
     }
 }
@@ -51,17 +55,26 @@ async function userPasswordUpdateWorkflow(user) {
     }
 
     try {
-        const response = await axios.post(`${baseUrl}/users/${user.username}/password`, {
-            password: user.password
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
+        const response = await axios.post(
+            joinUrl(baseUrl, 'users', user.username, 'password'),
+            {
+                password: user.password,
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             }
-        })
-        logger.info(`User password update request successful for ${user.username}`)
+        )
+        logger.info(
+            `User password update request successful for ${user.username}`
+        )
         return response.data
     } catch (error) {
-        logger.error(`User password update request failed for ${user.username}:`, error.message)
+        logger.error(
+            `User password update request failed for ${user.username}:`,
+            error.message
+        )
         throw error
     }
 }
@@ -78,11 +91,14 @@ async function userDeletionWorkflow(user) {
     }
 
     try {
-        const response = await axios.delete(`${baseUrl}/users/${user.username}`)
+        const response = await axios.delete(joinUrl(baseUrl, 'users', user.username))
         logger.info(`User deletion request successful for ${user.username}`)
         return response.data
     } catch (error) {
-        logger.error(`User deletion request failed for ${user.username}:`, error.message)
+        logger.error(
+            `User deletion request failed for ${user.username}:`,
+            error.message
+        )
         throw error
     }
 }
