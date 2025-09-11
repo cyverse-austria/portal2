@@ -37,9 +37,8 @@ const getLoggableUserID = (req) => getUserID(req) || "logged-out-user"
 const requestLogger = expressWinston.logger({
   transports: [new transports.Console()],
   msg: (req, res) => {
-      const body = req && req.body ? JSON.stringify(req.body) : '';
-      return `HTTP ${req.ip} ${getLoggableUserID(req)} ${req.method} ${req.url} ${res.statusCode} ${res.responseTime}ms` +
-          (body.length > 2 ? "\n" + body : ''); // ignore empty body [] or {}
+      // Never log request bodies as they may contain passwords, tokens, and other sensitive data
+      return `HTTP ${req.ip} ${getLoggableUserID(req)} ${req.method} ${req.url} ${res.statusCode} ${res.responseTime}ms`;
   },
   format: combine(label({ label: logLabel }), timestamp(), logFormat, colorize({ all: true })),
 })

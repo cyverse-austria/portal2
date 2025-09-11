@@ -25,7 +25,7 @@ function checkLDAPPassword(hash, secret) {
 function checkDjangoPassword(hash, secret) {
     const parts = hash.split('$')
     if (parts.length < 4) {
-        console.log('checkDjangoPassword: invalid hash:', hash)
+        console.log('checkDjangoPassword: invalid hash format')
         return false
     }
 
@@ -40,14 +40,10 @@ function checkDjangoPassword(hash, secret) {
 
 // Migrated from v1: /account/serializers/password_change.py
 function checkPassword(hash, secret) {
-    console.log(hash)
-
     if (hash.startsWith('{SSHA}')) {
-        console.log('Using LDAP password check')
         return checkLDAPPassword(hash, secret)
     }
 
-    console.log('Using Django password check')
     return checkDjangoPassword(hash, secret)
 }
 

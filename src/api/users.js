@@ -434,7 +434,6 @@ router.post(
         const user = await User.unscoped().findByPk(req.user.id, {
             include: ['occupation'],
         })
-        console.log(user)
 
         // Check the password
         if (!checkPassword(user.password, fields.oldPassword))

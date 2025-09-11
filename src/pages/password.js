@@ -99,7 +99,7 @@ const Right = (props) => {
         setSubmitted(true)
     }
     catch(error) {
-      console.log(error.response)
+      console.log('Password reset error occurred')
       setPageError(error.response.data)
     }
   }

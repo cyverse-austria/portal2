@@ -118,7 +118,7 @@ async function emailNewEmailConfirmation(email, hmac) {
 
 async function emailPasswordReset(emailAddress, hmac) {
     const resetUrl = `${UI_PASSWORD_URL}?reset&code=${hmac}`;
-    logger.debug('emailPasswordReset:', emailAddress.email, resetUrl);
+    logger.debug('emailPasswordReset: sending password reset email to', emailAddress.email);
     queueEmail(
         renderEmail({
             to: emailAddress.email, 

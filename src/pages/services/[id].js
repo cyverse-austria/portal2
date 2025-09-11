@@ -617,7 +617,6 @@ export async function getServerSideProps({ req, query }) {
       headers: { 'Authorization': `Bearer ${data.access_token}` }
     })
     data = await resp.json()
-    console.log('vice concurrent jobs:', data)
     viceStatus = (data && data.concurrent_jobs && data.concurrent_jobs > 0)
   }
 
