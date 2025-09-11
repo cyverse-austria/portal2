@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 const { logger } = require('./logging');
+const { joinUrl } = require('./url');
 const { UI_WORKSHOPS_URL, UI_REQUESTS_URL, UI_SERVICES_URL, UI_PASSWORD_URL, UI_CONFIRM_EMAIL_URL } = require('../../constants/server');
 
 // Initialize configuration
@@ -9,27 +10,72 @@ config.init();
 const smtpConfig = config.getAll().smtp || {};
 const supportConfig = config.getAll().support || {};
 
-const sendmail = require('sendmail')({ 
-    silent: false, 
-    devPort: smtpConfig.port, 
-    smtpHost: smtpConfig.host 
-});
-
 const TIME_BETWEEN_EMAILS = 30 * 1000 // rate limit to one email sent per 30 seconds
 let nextEmailSendTime = 0
 const SUPPORT_EMAIL = supportConfig.email
 
-function queueEmail(cfg) {
+async function queueEmail(cfg) {
     const now = Date.now();
     nextEmailSendTime = Math.max(now, nextEmailSendTime + TIME_BETWEEN_EMAILS);
     const delay = nextEmailSendTime - now
 
     setTimeout(
-        () => sendmail(cfg),
+        async () => {
+            try {
+                await sendEmailViaConductor(cfg);
+            } catch (error) {
+                logger.error('Failed to send email via conductor:', error.message);
+            }
+        },
         delay + 100 // add small delay so log message can appear first
     );
 
     logger.debug(`queueEmail: queued ${cfg.to} "${cfg.subject}" for ${delay/1000}s`);
+}
+
+async function sendEmailViaConductor(cfg) {
+    const { url: baseUrl } = config.getPortalConductorConfig();
+    if (!baseUrl) {
+        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set');
+    }
+
+    const emailRequest = {
+        to: cfg.to,
+        subject: cfg.subject,
+        from_email: cfg.from,
+    };
+
+    // Handle BCC
+    if (cfg.bcc) {
+        emailRequest.bcc = cfg.bcc;
+    }
+
+    // Set email body (HTML or text)
+    if (cfg.html) {
+        emailRequest.html_body = cfg.html;
+    } else if (cfg.text) {
+        emailRequest.text_body = cfg.text;
+    } else {
+        throw new Error('Email must have either HTML or text body');
+    }
+
+    const fetch = (await import('node-fetch')).default;
+    const response = await fetch(joinUrl(baseUrl, 'emails', 'send'), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailRequest),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Portal conductor email API error: ${response.status} ${errorText}`);
+    }
+
+    const result = await response.json();
+    logger.debug('Email sent via conductor:', result.message);
+    return result;
 }
 
 function renderEmail({ to, bcc, subject, templateName, fields, message }) {
