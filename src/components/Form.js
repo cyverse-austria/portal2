@@ -107,6 +107,15 @@ const AutoSave = ({ debounceMs }) => {
     debouncedSubmit();
   }, [debouncedSubmit, formik.values])
 
+  // Clean up the debounced function when component unmounts
+  useEffect(() => {
+    return () => {
+      if (debouncedSubmit.cancel) {
+        debouncedSubmit.cancel()
+      }
+    }
+  }, [debouncedSubmit])
+
   return (
     <></>
     // <div style={!!formik.isSubmitting ? null : {visibility: 'hidden'}}>

@@ -1,13 +1,13 @@
 import React from 'react'
 import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import getConfig from "next/config"
 import Markdown from 'markdown-to-jsx'
 import { Container, Paper, Grid, Box, Tabs, Tab, Typography, Tooltip, Button, IconButton, CircularProgress, Link, TextField, List, ListItem, ListItemText, ListItemAvatar, Avatar, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Collapse, Chip } from '@mui/material'
 import { Person as PersonIcon, Delete as DeleteIcon, KeyboardArrowUp as KeyboardArrowUpIcon, KeyboardArrowDown as KeyboardArrowDownIcon } from '@mui/icons-material'
 import Autocomplete from '@mui/material/Autocomplete'
 import { makeStyles } from '../../styles/tss'
-import DateFnsUtils from '@date-io/date-fns'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider, DatePicker, DateTimePicker } from '@mui/x-date-pickers'
 import { Layout, DateRange, DateSpan, TabPanel, UpdateForm, FormDialog, ContactsEditor, ServicesList, AddServiceDialog } from '../../components'
 import { useAPI } from '../../contexts/api'
@@ -81,19 +81,35 @@ const WorkshopViewer = (props) => {
   // The enrollment status will live udpate in cases where an instructor manually approves a request
   // while the user is viewing this page.
   useEffect(() => {
-    const socket = new WebSocket(`${config.WS_BASE_URL}/${user.username}`)
+    let socket = null
+    try {
+      socket = new WebSocket(`${config.WS_BASE_URL}/${user.username}`)
 
-    // Listen for messages // TODO move into library
-    socket.addEventListener('message', function (event) {
-      console.log('Socket received:', event.data)
-      if (!event || !event.data)
-        return
+      // Listen for messages // TODO move into library
+      socket.addEventListener('message', function (event) {
+        console.log('Socket received:', event.data)
+        if (!event || !event.data)
+          return
 
-      event = JSON.parse(event.data)
-      if (event.type == WS_WORKSHOP_ENROLLMENT_REQUEST_STATUS_UPDATE && event.data.workshopId == workshop.id) {
-        setRequestStatus(event.data.status)
+        try {
+          const eventData = JSON.parse(event.data)
+          if (eventData.type == WS_WORKSHOP_ENROLLMENT_REQUEST_STATUS_UPDATE && eventData.data.workshopId == workshop.id) {
+            setRequestStatus(eventData.data.status)
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error)
+        }
+      });
+    } catch (error) {
+      console.error('WebSocket connection failed:', error)
+    }
+
+    // Cleanup function
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close()
       }
-    });
+    }
   }, [])
 
   return (
@@ -250,19 +266,32 @@ const WorkshopEditor = (props) => {
   const [tab, setTab] = useState(router.query.t || 'view')
 
   useEffect(() => { 
+      let isMounted = true
       const fetchData = async () => {
-        const [participants, emails, requests, services] = await Promise.all([
-          api.workshopParticipants(workshop.id),
-          api.workshopEmails(workshop.id),
-          api.workshopRequests(workshop.id),
-          api.services() // for adding a service 
-        ])
-        setParticipants(participants)
-        setEmails(emails)
-        setRequests(requests)
-        setServices(services)
+        try {
+          const [participants, emails, requests, services] = await Promise.all([
+            api.workshopParticipants(workshop.id),
+            api.workshopEmails(workshop.id),
+            api.workshopRequests(workshop.id),
+            api.services() // for adding a service 
+          ])
+          if (isMounted) {
+            setParticipants(participants)
+            setEmails(emails)
+            setRequests(requests)
+            setServices(services)
+          }
+        } catch (error) {
+          if (isMounted) {
+            console.error('Error fetching workshop data:', error)
+          }
+        }
       }
       fetchData()
+      
+      return () => {
+        isMounted = false
+      }
     }, 
     []
   )
@@ -466,6 +495,16 @@ const WorkshopEditor = (props) => {
 
 const GeneralSettings = (props) => {
   const { classes } = useStyles()
+  const timeoutRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      // Clear any pending timeouts when component unmounts
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   return (
     <Paper elevation={3} className={classes.paper}>
@@ -501,10 +540,11 @@ const GeneralSettings = (props) => {
         initialValues={{...props}} // unused fields will be ignored
         autosave
         onSubmit={(values, { setSubmitting }) => {
-          setTimeout(() => {
+          timeoutRef.current = setTimeout(() => {
             console.log('Submit:', values)
             props.submitHandler(values)
             setSubmitting(false)
+            timeoutRef.current = null
           }, 1000)
         }}
       />
@@ -512,11 +552,11 @@ const GeneralSettings = (props) => {
   )
 }
 
-const EnrollmentPeriod = ({ enrollment_begins, enrollment_ends, submitHandler }) => {
+const EnrollmentPeriod = ({ enrollment_begins, enrollment_ends, submitHandler, creator_id }) => {
   const { classes } = useStyles()
   const [user] = useUser()
   //const [errors, setErrors] = useState({})
-  const isEditor = user.is_staff || isHost(user, workshop)
+  const isEditor = user.is_staff || isHost(user, { creator_id })
 
   //TODO
   // const validate = (values) => {
@@ -536,31 +576,41 @@ const EnrollmentPeriod = ({ enrollment_begins, enrollment_ends, submitHandler })
         Date range for when users can enroll in the workshop.
       </Typography>
       <br />
-      <LocalizationProvider utils={DateFnsUtils}>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Grid container justifyContent="space-around">
           <DatePicker
             disabled={!isEditor}
-            inputFormat="MM/dd/yyyy"
-            margin="normal"
+            format="MM/dd/yyyy"
             sx={{width: '45%'}}
-            id="enrollment_begins"
             label="Enrollment Begins (MST)"
-            helperText="This is the earliest that users with an authorized email will be able to enroll and get access to the workshop services."
-            value={enrollment_begins}
+            value={enrollment_begins ? new Date(enrollment_begins) : null}
             onChange={(value) => handleChange({'enrollment_begins': value})}
-            renderInput={(params) => <TextField {...params} />}
+            slots={{
+              textField: TextField
+            }}
+            slotProps={{
+              textField: {
+                helperText: "This is the earliest that users with an authorized email will be able to enroll and get access to the workshop services.",
+                margin: "normal"
+              }
+            }}
           />
           <DatePicker
             disabled={!isEditor}
-            inputFormat="MM/dd/yyyy"
-            margin="normal"
+            format="MM/dd/yyyy"
             sx={{width: '45%'}}
-            id="enrollment_ends"
             label="Enrollment Ends (MST)"
-            helperText="After this date users will not be able to enroll in the workshop, even if their email is authorized."
-            value={enrollment_ends}
+            value={enrollment_ends ? new Date(enrollment_ends) : null}
             onChange={(value) => handleChange({'enrollment_ends': value})}
-            renderInput={(params) => <TextField {...params} />}
+            slots={{
+              textField: TextField
+            }}
+            slotProps={{
+              textField: {
+                helperText: "After this date users will not be able to enroll in the workshop, even if their email is authorized.",
+                margin: "normal"
+              }
+            }}
           />
         </Grid>
       </LocalizationProvider>
@@ -569,11 +619,11 @@ const EnrollmentPeriod = ({ enrollment_begins, enrollment_ends, submitHandler })
 }
 
 //FIXME similar to EnrollmentPeriod, move into shared component
-const WorkshopPeriod = ({ start_date, end_date, enrollment_begins, submitHandler }) => {
+const WorkshopPeriod = ({ start_date, end_date, enrollment_begins, submitHandler, creator_id }) => {
   const { classes } = useStyles()
   const [user] = useUser()
   const [errors, setErrors] = useState({})
-  const isEditor = user.is_staff || isHost(user, workshop)
+  const isEditor = user.is_staff || isHost(user, { creator_id })
 
   const validate = (values) => {
     const errors = {}
@@ -620,35 +670,45 @@ const WorkshopPeriod = ({ start_date, end_date, enrollment_begins, submitHandler
         Date range for when users will attend the workshop.
       </Typography>
       <br />
-      <LocalizationProvider utils={DateFnsUtils}>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Grid container justifyContent="space-around">
           <DateTimePicker
             disabled={!isEditor}
-            inputFormat="MM/dd/yyyy hh:mm a"
-            margin="normal"
+            format="MM/dd/yyyy hh:mm a"
             sx={{width: '45%'}}
-            id="start_date"
             label="Workshop Begins (MST)"
-            error={!!errors["start_date"]}
-            helperText={errors["start_date"]}
-            value={start_date}
-            minDate={enrollment_begins}
+            value={start_date ? new Date(start_date) : null}
+            minDate={enrollment_begins ? new Date(enrollment_begins) : null}
             onChange={(value) => handleChange({'start_date': value})}
-            renderInput={(params) => <TextField {...params} />}
+            slots={{
+              textField: TextField
+            }}
+            slotProps={{
+              textField: {
+                error: !!errors["start_date"],
+                helperText: errors["start_date"],
+                margin: "normal"
+              }
+            }}
           />
           <DateTimePicker
             disabled={!isEditor}
-            inputFormat="MM/dd/yyyy hh:mm a"
-            margin="normal"
+            format="MM/dd/yyyy hh:mm a"
             sx={{width: '45%'}}
-            id="end_date"
             label="Workshop Ends (MST)"
-            error={!!errors["end_date"]}
-            helperText={errors["end_date"]}
-            value={end_date}
-            minDate={enrollment_begins}
+            value={end_date ? new Date(end_date) : null}
+            minDate={enrollment_begins ? new Date(enrollment_begins) : null}
             onChange={(value) => handleChange({'end_date': value})}
-            renderInput={(params) => <TextField {...params} />}
+            slots={{
+              textField: TextField
+            }}
+            slotProps={{
+              textField: {
+                error: !!errors["end_date"],
+                helperText: errors["end_date"],
+                margin: "normal"
+              }
+            }}
           />
         </Grid>
       </LocalizationProvider>
@@ -710,11 +770,11 @@ const Host = ({ owner, submitHandler }) => {
   )
 }
 
-const Organizers = ({ organizers, owner, submitHandler, deleteHandler }) => {
+const Organizers = ({ organizers, owner, submitHandler, deleteHandler, creator_id }) => {
   const { classes } = useStyles()
   const [user] = useUser()
   const [dialogOpen, setDialogOpen] = useState(false)
-  const isEditable = user.is_staff || isHost(user, workshop)
+  const isEditable = user.is_staff || isHost(user, { creator_id })
 
   return (
     <div>
@@ -1110,6 +1170,14 @@ const SearchUsersDialog = ({ open, title, description, handleClose, handleSubmit
   const [debounce, setDebounce] = useState(null)
   const [loading, setLoading] = useState(false)
   const [selectedUser, setSelectedUser] = useState()
+
+  useEffect(() => {
+    return () => {
+      if (debounce) {
+        clearTimeout(debounce)
+      }
+    }
+  }, [debounce])
 
   const handleChange = (event) => {
     const { value } = event.target
