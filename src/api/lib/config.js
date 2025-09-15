@@ -263,6 +263,14 @@ class ConfigManager {
     return this._config.honeypot;
   }
 
+  /**
+   * Get security configuration
+   * @returns {Object} Security configuration object
+   */
+  getSecurityConfig() {
+    this.init();
+    return this._config.security;
+  }
 
   /**
    * Get all configuration

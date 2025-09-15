@@ -13,12 +13,19 @@ async function userCreationWorkflow(user) {
         throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
     }
 
+    // Generate numeric uidNumber for LDAP using user ID + offset
+    const securityConfig = config.getSecurityConfig()
+    const uidNumberOffset = securityConfig?.uidNumberOffset || 2831
+    const uidNumber = user.id + uidNumberOffset
+
+    logger.info(`Generating uidNumber for user ${user.username}: ${uidNumber} (id: ${user.id} + offset: ${uidNumberOffset})`)
+
     const requestBody = {
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.email,
         username: user.username,
-        user_uid: user.username,
+        user_uid: uidNumber.toString(),
         password: user.password,
         department: user.department,
         organization: user.institution,
