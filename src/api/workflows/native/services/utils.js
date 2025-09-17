@@ -21,6 +21,7 @@ function getPortalConductorUrl() {
     if (!baseUrl) {
         throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
     }
+    logger.debug(`Portal-conductor base URL: ${baseUrl}`)
     return baseUrl
 }
 
@@ -52,13 +53,29 @@ async function makeRequest(method, endpoint, data = null, options = {}) {
     }
 
     try {
-        logger.debug(`Portal-conductor request: ${method} ${endpoint}`)
+        logger.debug(`Portal-conductor request: ${method} ${requestConfig.url}`)
+        if (data) {
+            logger.debug(`Portal-conductor request data:`, data)
+        }
         const response = await axios(requestConfig)
         logger.debug(`Portal-conductor response: ${response.status}`)
         return response.data
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.message
+        let errorMessage = error.response?.data?.detail || error.message || 'Unknown error'
+
+        // Add more debugging information if error message is still empty or generic
+        if (!errorMessage || errorMessage === 'Unknown error') {
+            errorMessage = `HTTP ${error.response?.status || 'unknown'}`
+            if (error.response?.data) {
+                errorMessage += ` - ${JSON.stringify(error.response.data)}`
+            }
+            if (error.code) {
+                errorMessage += ` (${error.code})`
+            }
+        }
+
         logger.error(`Portal-conductor request failed: ${method} ${endpoint} - ${errorMessage}`)
+        logger.error(`Full error details:`, error.response?.data || error.message || error)
         throw new Error(`Portal-conductor API error: ${errorMessage}`)
     }
 }
