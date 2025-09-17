@@ -3,13 +3,13 @@ import { useRouter } from 'next/router'
 import { useState, useEffect, useRef } from 'react'
 import getConfig from "next/config"
 import Markdown from 'markdown-to-jsx'
-import { Container, Paper, Grid, Box, Tabs, Tab, Typography, Tooltip, Button, IconButton, CircularProgress, Link, TextField, List, ListItem, ListItemText, ListItemAvatar, Avatar, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Collapse, Chip } from '@mui/material'
+import { Container, Paper, Grid, Box, Tabs, Tab, Typography, Tooltip, Button, IconButton, Link, TextField, List, ListItem, ListItemText, ListItemAvatar, Avatar, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Collapse, Chip } from '@mui/material'
 import { Person as PersonIcon, Delete as DeleteIcon, KeyboardArrowUp as KeyboardArrowUpIcon, KeyboardArrowDown as KeyboardArrowDownIcon } from '@mui/icons-material'
 import Autocomplete from '@mui/material/Autocomplete'
 import { makeStyles } from '../../styles/tss'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider, DatePicker, DateTimePicker } from '@mui/x-date-pickers'
-import { Layout, DateRange, DateSpan, TabPanel, UpdateForm, FormDialog, ContactsEditor, ServicesList, AddServiceDialog } from '../../components'
+import { Layout, LoadingLayout, DateRange, DateSpan, TabPanel, UpdateForm, FormDialog, ContactsEditor, ServicesList, AddServiceDialog } from '../../components'
 import { useAPI } from '../../contexts/api'
 import { useError } from '../../contexts/error'
 import { useUser } from '../../contexts/user'
@@ -26,22 +26,25 @@ const useStyles = makeStyles()((theme) => ({
 }))
 
 const isHost = (user, workshop) => {
-  return user.id == workshop.creator_id
+  return user?.id == workshop.creator_id
 }
 
 const isOrganizer = (user, workshop) => {
-  return workshop.organizers && workshop.organizers.some(o => o.id == user.id)
+  return workshop.organizers && workshop.organizers.some(o => o.id == user?.id)
 }
 
 const Workshop = (props) => {
   const workshop = props.workshop
   const [user] = useUser()
-  const isEditor = user.is_staff || isHost(user, workshop) || isOrganizer(user, workshop)
+
+  // Workshop details should be viewable by unauthenticated users
+  // Only editing features require authentication
+  const isEditor = user && (user.is_staff || isHost(user, workshop) || isOrganizer(user, workshop))
 
   return (
     <Layout title={workshop.title} breadcrumbs>
       <Container maxWidth='lg'>
-        {isEditor 
+        {isEditor
           ? <WorkshopEditor {...props} />
           : <div><br /><WorkshopViewer {...props} /></div>
         }

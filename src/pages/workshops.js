@@ -1,7 +1,7 @@
 import React from 'react'
 import { Grid, Link, Box, Divider, Typography, Button } from '@mui/material'
 import { Event as EventIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material'
-import { DateRange, Layout, SummaryCard } from '../components'
+import { DateRange, Layout, LoadingLayout, SummaryCard } from '../components'
 import { useUser } from '../contexts/user'
 import { makeStyles } from '../styles/tss'
 
@@ -14,15 +14,21 @@ const useStyles = makeStyles()((theme) => ({
 const Workshops = (props) => {
   const [user] = useUser()
   const workshops = props.workshops || []
+
+  // Handle case where user is not authenticated (user will be null for unauthenticated users)
+  const userWorkshopEnrollments = user?.workshops || []
+
+  // Categorize workshops based on user relationship
+  // Include workshops user is enrolled in, hosting, or organizing
   const userWorkshops = [].concat(
-    user?.workshops || [], // workshop user is/was enrolled in
+    userWorkshopEnrollments, // workshop user is/was enrolled in
     workshops.filter(w =>
-      !(user?.workshops || []).find(uw => uw.id == w.id) && // skip duplicates
+      !userWorkshopEnrollments.find(uw => uw.id == w.id) && // skip duplicates
       (w.creator_id == user?.id ||
         (w.organizers && w.organizers.some(o => o.id == user?.id)))
     ) // workshop user is/was hosting/organizer
   )
-  const otherWorkshops = workshops.filter(w => !userWorkshops.find(w2 => w2.id == w.id)) 
+  const otherWorkshops = workshops.filter(w => !userWorkshops.find(w2 => w2.id == w.id))
 
   const timeNow = Date.now()
   const mine = userWorkshops.filter(w => new Date(w.enrollment_ends).getTime() > timeNow)
@@ -101,8 +107,8 @@ const WorkshopGrid = ({ workshops }) => (
 const Workshop = ({ workshop }) => {
   const { classes } = useStyles()
   const [user] = useUser()
-  const isHost = user.id == workshop.creator_id
-  const isOrganizer = workshop.organizers && workshop.organizers.some(o => o.id == user.id)
+  const isHost = user?.id == workshop.creator_id
+  const isOrganizer = workshop.organizers && workshop.organizers.some(o => o.id == user?.id)
 
   return (
     <Link underline='none' href={`workshops/${workshop.id}`}>

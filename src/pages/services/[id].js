@@ -5,7 +5,7 @@ import Markdown from 'markdown-to-jsx'
 import { Container, Grid, Link, Box, Button, IconButton, Paper, Tabs, Tab, List, ListItem, ListItemText, ListItemAvatar, Avatar, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, MenuItem } from '@mui/material'
 import { Person as PersonIcon, List as ListIcon, MenuBook as MenuBookIcon, Delete as DeleteIcon } from '@mui/icons-material'
 import { Formik, Form } from 'formik'
-import { Layout, ServiceActionButton, TabPanel, UpdateForm, QuestionsEditor, ContactsEditor, ResourcesEditor, FormField } from '../../components'
+import { Layout, LoadingLayout, ServiceActionButton, TabPanel, UpdateForm, QuestionsEditor, ContactsEditor, ResourcesEditor, FormField } from '../../components'
 import { useAPI } from '../../contexts/api'
 import { useError, withGetServerSideError } from '../../contexts/error'
 import { useUser } from '../../contexts/user'
@@ -23,10 +23,12 @@ const Service = (props) => {
   const service = props.service
   const [user] = useUser()
 
-  return ( 
+  // Service details should be viewable by unauthenticated users
+  // Only staff editing features require authentication
+  return (
     <Layout title={service.name} breadcrumbs>
       <Container maxWidth='lg'>
-        {user.is_staff 
+        {user?.is_staff
           ? <ServiceEditor {...props} />
           : <div><br /><ServiceViewer {...props} /></div>
         }

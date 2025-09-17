@@ -2,7 +2,7 @@ import { useState } from 'react'
 import cookie from 'cookie'
 import { Link, Grid, Button, IconButton, Divider, Box, Typography } from '@mui/material'
 import { Launch as LaunchIcon, HelpOutlineOutlined as HelpIcon } from '@mui/icons-material'
-import { Layout, SummaryCard, WelcomeBanner } from '../components'
+import { Layout, LoadingLayout, SummaryCard, WelcomeBanner } from '../components'
 import { useUser } from '../contexts/user'
 import { WELCOME_BANNER_COOKIE } from '../constants/client'
 import DataLimitAnnouncement from '../components/DataLimitAnnouncement'
@@ -10,9 +10,10 @@ const inlineIcons = require('../inline_icons.json')
 
 const Services = (props) => {
   const [user] = useUser()
-  const userServices = (user?.services || []).filter(s => s.api_accessrequest.status != 'denied')
   const services = props.services || []
 
+  // Handle case where user is not authenticated (user will be null for unauthenticated users)
+  const userServices = (user?.services || []).filter(s => s.api_accessrequest.status != 'denied')
   const available = services.filter(s => s.is_public && s.approval_key != '' && !userServices.map(s => s.id).includes(s.id))
   const powered = services.filter(s => s.is_powered)
 

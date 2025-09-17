@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { Container, AppBar, Toolbar, Box, Paper, Typography, Link, Button, IconButton, TextField, Avatar, List, ListItem, ListItemText, ListItemAvatar, ListItemSecondaryAction, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material'
 import { Person as PersonIcon, Mail as MailIcon, Delete as DeleteIcon } from '@mui/icons-material'
-import { Layout, UpdateForm, MailingListForm, MainLogo } from '../components'
+import { Layout, LoadingLayout, UpdateForm, MailingListForm, MainLogo } from '../components'
 import { isEmail, isEmpty } from 'validator'
 import { useUser } from '../contexts/user'
 import { useAPI } from '../contexts/api'
@@ -42,13 +42,27 @@ const Account = () => {
   const [_, setError] = useError()
   const [__, setSuccess] = useSuccess()
   const [user, setUser] = useUser()
+
+  // All useState hooks must be declared before any conditional returns
   const [sentEmails, setSentEmails] = useState([])
   const [institutions, setInstitutions] = useState()
-  const [institutionKeyword, setInstitutionKeyword] = useState(user.institution)
+  const [institutionKeyword, setInstitutionKeyword] = useState(user?.institution || '')
   const [institutionError, setInstitutionError] = useState()
   const [forms, setForms] = useState()
   const [inputDebounce, setInputDebounce] = useState(null)
   const [updateDebounce, setUpdateDebounce] = useState(null)
+
+  // Account page requires authentication
+  if (!user) {
+    return (
+      <Layout title="Account">
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px" flexDirection="column">
+          <Typography variant="h6" sx={{ mb: 2 }}>Authentication Required</Typography>
+          <Typography variant="body1">Please log in to access your account details.</Typography>
+        </Box>
+      </Layout>
+    )
+  }
 
   const reviewMode = router && router.query && router.query.reviewMode
   const redirectUrl = router && router.query && router.query.redirectUrl
