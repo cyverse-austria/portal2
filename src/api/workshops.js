@@ -27,6 +27,52 @@ function hasOrganizerAccess(workshop, user) {
     return hasHostAccess(workshop, user) || WorkshopOrganizer.findOne({ where: { workshop_id: workshop.id, organizer_id: user.id } })
 }
 
+async function processParticipantsInBackground(workshop, service) {
+    try {
+        logger.info(`Granting new service access for ${workshop.users.length} participants for workshop ${workshop.id}`);
+
+        for (const user of workshop.users) {
+            try {
+                logger.info(`grant: Grant access to service ${service.name} for user ${user.id}`);
+
+                let serviceRequest = await AccessRequest.findOne({
+                    where: {
+                        service_id: service.id,
+                        user_id: user.id
+                    }
+                });
+
+                if (!serviceRequest) {
+                    serviceRequest = await AccessRequest.create({
+                        service_id: service.id,
+                        user_id: user.id,
+                        auto_approve: true,
+                        status: AccessRequest.constants.STATUS_REQUESTED,
+                        message: AccessRequest.constants.MESSAGE_REQUESTED
+                    });
+                }
+
+                if (!serviceRequest.isGranted()) {
+                    serviceRequest.service = service;
+                    serviceRequest.user = user;
+                    await serviceApprovers.grantRequest(serviceRequest);
+                }
+
+                // Add small delay between participants to prevent overwhelming the system
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+            } catch (error) {
+                logger.error(`Failed to grant service access for user ${user.id}: ${error.message}`);
+                // Continue processing other participants even if one fails
+            }
+        }
+
+        logger.info(`Completed granting service access for workshop ${workshop.id}`);
+    } catch (error) {
+        logger.error(`Failed to process participants for workshop ${workshop.id}: ${error.message}`);
+    }
+}
+
 // Get all workshops
 router.get('/', asyncHandler(async (req, res) => {
     const workshops = await Workshop.findAll({
@@ -534,31 +580,8 @@ router.put('/:id(\\d+)/services', getUser, asyncHandler(async (req, res) => {
     res.status(201).json(workshopService);
 
     // Call service granter for each participant (do this after response as to not delay it)
-    logger.info(`Granting new service access for ${workshop.users.length} participants for workshop ${workshop.id}`);
-    for (const user of workshop.users) {
-        logger.info(`grant: Grant access to service ${service.name} for user ${user.id}`);
-        let serviceRequest = await AccessRequest.findOne({
-            where: { 
-                service_id: service.id,
-                user_id: user.id
-            }
-        });
-        if (!serviceRequest) {
-            serviceRequest = await AccessRequest.create({
-                service_id: service.id,
-                user_id: user.id,
-                auto_approve: true,
-                status: AccessRequest.constants.STATUS_REQUESTED,
-                message: AccessRequest.constants.MESSAGE_REQUESTED
-            });
-        }
-
-        if (!serviceRequest.isGranted()) { 
-            serviceRequest.service = service;
-            serviceRequest.user = user;
-            serviceApprovers.grantRequest(serviceRequest)
-        }
-    }
+    // Run asynchronously in background to prevent blocking the response
+    processParticipantsInBackground(workshop, service);
 }));
 
 // Remove service from workshop
