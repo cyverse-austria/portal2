@@ -26,17 +26,66 @@ function getPortalConductorUrl() {
 }
 
 /**
- * Make an HTTP request to portal-conductor with proper error handling
+ * Get retry count from configuration
+ * @returns {number} Number of retries (default: 5)
+ */
+function getRetryCount() {
+    const { retries = 5 } = config.getPortalConductorConfig()
+    return retries
+}
+
+/**
+ * Sleep for specified milliseconds
+ * @param {number} ms - Milliseconds to sleep
+ * @returns {Promise} Promise that resolves after delay
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * Calculate exponential backoff delay
+ * @param {number} attempt - Current attempt number (0-based)
+ * @returns {number} Delay in milliseconds
+ */
+function getBackoffDelay(attempt) {
+    const baseDelay = 1000 // 1 second
+    const maxDelay = 30000 // 30 seconds
+    const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay)
+    // Add jitter (±25% randomization)
+    const jitter = delay * 0.25 * (Math.random() * 2 - 1)
+    return Math.floor(delay + jitter)
+}
+
+/**
+ * Check if an error is retryable
+ * @param {Error} error - The error to check
+ * @returns {boolean} True if error is retryable
+ */
+function isRetryableError(error) {
+    if (!error.response) {
+        // Network errors (no response) are retryable
+        return true
+    }
+
+    const status = error.response.status
+    // Retry on 5xx server errors and specific 4xx errors
+    return status >= 500 || status === 408 || status === 429
+}
+
+/**
+ * Make an HTTP request to portal-conductor with proper error handling and retry logic
  * @param {string} method - HTTP method (GET, POST, DELETE, etc.)
  * @param {string} endpoint - API endpoint relative to base URL
  * @param {Object} data - Request body data (for POST/PUT requests)
  * @param {Object} options - Additional axios options
  * @returns {Promise<Object>} Response data
- * @throws {Error} If request fails
+ * @throws {Error} If request fails after all retries
  */
 async function makeRequest(method, endpoint, data = null, options = {}) {
     const baseUrl = getPortalConductorUrl()
     const url = joinUrl(baseUrl, endpoint)
+    const maxRetries = getRetryCount()
 
     const requestConfig = {
         method,
@@ -52,32 +101,50 @@ async function makeRequest(method, endpoint, data = null, options = {}) {
         requestConfig.data = data
     }
 
-    try {
-        logger.debug(`Portal-conductor request: ${method} ${requestConfig.url}`)
-        if (data) {
-            logger.debug(`Portal-conductor request data:`, data)
-        }
-        const response = await axios(requestConfig)
-        logger.debug(`Portal-conductor response: ${response.status}`)
-        return response.data
-    } catch (error) {
-        let errorMessage = error.response?.data?.detail || error.message || 'Unknown error'
+    let lastError
 
-        // Add more debugging information if error message is still empty or generic
-        if (!errorMessage || errorMessage === 'Unknown error') {
-            errorMessage = `HTTP ${error.response?.status || 'unknown'}`
-            if (error.response?.data) {
-                errorMessage += ` - ${JSON.stringify(error.response.data)}`
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            logger.debug(`Portal-conductor request (attempt ${attempt + 1}/${maxRetries + 1}): ${method} ${requestConfig.url}`)
+            if (data) {
+                logger.debug(`Portal-conductor request data:`, data)
             }
-            if (error.code) {
-                errorMessage += ` (${error.code})`
+            const response = await axios(requestConfig)
+            logger.debug(`Portal-conductor response: ${response.status}`)
+            return response.data
+        } catch (error) {
+            lastError = error
+
+            let errorMessage = error.response?.data?.detail || error.message || 'Unknown error'
+
+            // Add more debugging information if error message is still empty or generic
+            if (!errorMessage || errorMessage === 'Unknown error') {
+                errorMessage = `HTTP ${error.response?.status || 'unknown'}`
+                if (error.response?.data) {
+                    errorMessage += ` - ${JSON.stringify(error.response.data)}`
+                }
+                if (error.code) {
+                    errorMessage += ` (${error.code})`
+                }
+            }
+
+            const isLastAttempt = attempt === maxRetries
+            const shouldRetry = !isLastAttempt && isRetryableError(error)
+
+            if (shouldRetry) {
+                const delay = getBackoffDelay(attempt)
+                logger.warn(`Portal-conductor request failed (attempt ${attempt + 1}/${maxRetries + 1}): ${method} ${endpoint} - ${errorMessage}. Retrying in ${delay}ms...`)
+                await sleep(delay)
+            } else {
+                logger.error(`Portal-conductor request failed: ${method} ${endpoint} - ${errorMessage}`)
+                logger.error(`Full error details:`, error.response?.data || error.message || error)
+                break
             }
         }
-
-        logger.error(`Portal-conductor request failed: ${method} ${endpoint} - ${errorMessage}`)
-        logger.error(`Full error details:`, error.response?.data || error.message || error)
-        throw new Error(`Portal-conductor API error: ${errorMessage}`)
     }
+
+    // If we reach here, all retry attempts failed
+    throw new Error(`Portal-conductor API error: ${lastError.response?.data?.detail || lastError.message || 'Unknown error'}`)
 }
 
 /**

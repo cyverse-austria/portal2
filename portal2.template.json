@@ -24,7 +24,8 @@
     "secret": "your-client-secret"
   },
   "portalConductor": {
-    "url": "https://your-portal-conductor-url"
+    "url": "https://your-portal-conductor-url",
+    "retries": 5
   },
   "terrain": {
     "url": "https://your-terrain-url",
