@@ -13,15 +13,16 @@ const useStyles = makeStyles()((theme) => ({
 
 const Workshops = (props) => {
   const [user] = useUser()
+  const workshops = props.workshops || []
   const userWorkshops = [].concat(
-    user.workshops, // workshop user is/was enrolled in
-    props.workshops.filter(w => 
-      !user.workshops.find(uw => uw.id == w.id) && // skip duplicates
-      (w.creator_id == user.id || 
-        (w.organizers && w.organizers.some(o => o.id == user.id)))
+    user?.workshops || [], // workshop user is/was enrolled in
+    workshops.filter(w =>
+      !(user?.workshops || []).find(uw => uw.id == w.id) && // skip duplicates
+      (w.creator_id == user?.id ||
+        (w.organizers && w.organizers.some(o => o.id == user?.id)))
     ) // workshop user is/was hosting/organizer
   )
-  const otherWorkshops = props.workshops.filter(w => !userWorkshops.find(w2 => w2.id == w.id)) 
+  const otherWorkshops = workshops.filter(w => !userWorkshops.find(w2 => w2.id == w.id)) 
 
   const timeNow = Date.now()
   const mine = userWorkshops.filter(w => new Date(w.enrollment_ends).getTime() > timeNow)
@@ -139,8 +140,40 @@ const Workshop = ({ workshop }) => {
 }
 
 export async function getServerSideProps({ req }) {
-  const workshops = await req.api.workshops()
-  return { props: { workshops } }
+  try {
+    // Check if API is available
+    if (!req.api) {
+      console.error('API middleware not available on request object')
+      return { props: { workshops: [] } }
+    }
+
+    const workshops = await req.api.workshops()
+
+    // Handle case where API returns undefined or null
+    if (workshops === undefined || workshops === null) {
+      console.warn('Workshops API returned undefined/null')
+      return { props: { workshops: [] } }
+    }
+
+    // Handle case where API returns array directly (expected case)
+    if (Array.isArray(workshops)) {
+      return { props: { workshops } }
+    }
+
+    // Handle case where API returns an object with workshops property (fallback)
+    if (workshops && typeof workshops === 'object' && workshops.workshops && Array.isArray(workshops.workshops)) {
+      console.warn('API returned workshops wrapped in object, using workshops.workshops')
+      return { props: { workshops: workshops.workshops } }
+    }
+
+    // Fallback for any other case
+    console.warn('Unexpected workshops API response format:', typeof workshops, workshops)
+    return { props: { workshops: [] } }
+
+  } catch (error) {
+    console.error('Failed to fetch workshops:', error)
+    return { props: { workshops: [] } }
+  }
 }
 
 export default Workshops

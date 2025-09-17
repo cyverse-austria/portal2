@@ -10,8 +10,8 @@ const inlineIcons = require('../inline_icons.json')
 
 const Services = (props) => {
   const [user] = useUser()
-  const userServices = user.services.filter(s => s.api_accessrequest.status != 'denied')
-  const services = props.services
+  const userServices = (user?.services || []).filter(s => s.api_accessrequest.status != 'denied')
+  const services = props.services || []
 
   const available = services.filter(s => s.is_public && s.approval_key != '' && !userServices.map(s => s.id).includes(s.id))
   const powered = services.filter(s => s.is_powered)
@@ -125,16 +125,58 @@ const Service = ({ id, name, description, icon_url, service_url, launch }) => {
 
 export async function getServerSideProps({ req }) {
   try {
+    // Check if API is available
+    if (!req.api) {
+      console.error('API middleware not available on request object')
+      return {
+        props: {
+          services: [],
+          cookies: cookie.parse(req.headers.cookie || '')
+        }
+      }
+    }
+
     const services = await req.api.services()
     const cookies = cookie.parse(req.headers.cookie || '');
-    return { props: { services, cookies } }
+
+    // Handle case where API returns undefined or null
+    if (services === undefined || services === null) {
+      console.warn('Services API returned undefined/null')
+      return {
+        props: {
+          services: [],
+          cookies
+        }
+      }
+    }
+
+    // Handle case where API returns array directly (expected case)
+    if (Array.isArray(services)) {
+      return { props: { services, cookies } }
+    }
+
+    // Handle case where API returns an object with services property (fallback)
+    if (services && typeof services === 'object' && services.services && Array.isArray(services.services)) {
+      console.warn('API returned services wrapped in object, using services.services')
+      return { props: { services: services.services, cookies } }
+    }
+
+    // Fallback for any other case
+    console.warn('Unexpected services API response format:', typeof services, services)
+    return {
+      props: {
+        services: [],
+        cookies
+      }
+    }
+
   } catch (error) {
-    console.error('Error in getServerSideProps:', error);
-    return { 
-      props: { 
+    console.error('Failed to fetch services:', error);
+    return {
+      props: {
         services: [],
         cookies: cookie.parse(req.headers.cookie || '')
-      } 
+      }
     }
   }
 }

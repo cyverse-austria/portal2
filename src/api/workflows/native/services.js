@@ -1,56 +1,59 @@
-const crypto = require('crypto')
-const axios = require('axios')
 const { logger } = require('../../lib/logging')
-const config = require('../../lib/config')
-const { joinUrl } = require('../../lib/url')
-const models = require('../../models')
-const MailingList = models.api_mailinglist
-const EmailAddress = models.account_emailaddress
-const EmailAddressToMailingList = models.api_emailaddressmailinglist
+const { getServiceImplementation, isServiceSupported } = require('./services/index')
+
+/**
+ * Service Registration Workflow Router
+ *
+ * This module routes service registration requests to the appropriate
+ * service-specific implementation based on the approval key.
+ *
+ * Benefits of this approach:
+ * - Clear separation of concerns per service
+ * - Easier to maintain and extend
+ * - Service-specific error handling and logging
+ * - Better compliance with DRY principle
+ */
 
 async function serviceRegistrationWorkflow(request) {
     const user = request.user
     const service = request.service
-    if (!user || !service)
-        throw 'serviceRegistrationWorkflow: Missing required property'
 
-    logger.info(
-        `Running native workflow for service ${service.name} and user ${user.username}`
-    )
-
-    const { url: baseUrl } = config.getPortalConductorConfig()
-    if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
+    if (!user || !service) {
+        throw new Error('serviceRegistrationWorkflow: Missing required property')
     }
 
-    const requestBody = {
-        user: {
-            username: user.username,
-            email: user.email,
-        },
-        service: {
-            approval_key: service.approval_key,
-        },
+    const approvalKey = service.approval_key
+    if (!approvalKey) {
+        throw new Error('Service approval key is required')
+    }
+
+    logger.info(
+        `Running service registration workflow for service ${service.name} (${approvalKey}) and user ${user.username}`
+    )
+
+    // Check if the service is supported
+    if (!isServiceSupported(approvalKey)) {
+        const errorMessage = `Unknown service approval key: ${approvalKey}`
+        logger.error(errorMessage)
+        throw new Error(errorMessage)
     }
 
     try {
-        const response = await axios.post(
-            joinUrl(baseUrl, 'services', 'register'),
-            requestBody,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }
-        )
+        // Get the service-specific implementation
+        const serviceImpl = getServiceImplementation(approvalKey)
+
+        // Execute the service-specific registration logic
+        const result = await serviceImpl.register(user, service)
+
         logger.info(
-            `Service registration request successful for service ${service.name} and user ${user.username}`
+            `Service registration workflow completed successfully for service ${service.name} and user ${user.username}`
         )
-        return response.data
+
+        return result
+
     } catch (error) {
         logger.error(
-            `Service registration request failed for service ${service.name} and user ${user.username}:`,
-            error.message
+            `Service registration workflow failed for service ${service.name} and user ${user.username}: ${error.message}`
         )
         throw error
     }

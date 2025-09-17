@@ -99,7 +99,7 @@ const FormSubmissionTable = ({ rows, rowsPerPage, count, page, handleChangePage,
               <TableCell>{submission.form.name}</TableCell>
               <TableCell>{submission.user.username}</TableCell>
               <TableCell>{submission.user.email}</TableCell>
-              <TableCell>{submission.user.region.country.name}</TableCell>
+              <TableCell>{submission?.user?.region?.country?.name || 'Not specified'}</TableCell>
               <TableCell>
                 <DateSpan date={submission.updated_at} />
               </TableCell>

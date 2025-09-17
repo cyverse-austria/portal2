@@ -43,7 +43,7 @@ const ServiceViewer = (props) => {
   const api = useAPI()
   const [user] = useUser()
   const [_, setError] = useError()
-  const userService = user.services.find(s => s.id == service.id)
+  const userService = (user?.services || []).find(s => s.id == service.id)
   const request = userService && userService.api_accessrequest
   const questions = service.questions && service.questions.length > 0 ? service.questions : null 
 
@@ -64,7 +64,7 @@ const ServiceViewer = (props) => {
   }
   
   useEffect(() => {
-    if (typeof props.viceStatus !== 'undefined') {
+    if (props.viceStatus !== null) {
       if (props.viceStatus)
         setRequestStatus('granted')
     }
@@ -597,30 +597,49 @@ const AddRequestDialog = ({ open, forms, allForms, handleClose, handleSubmit }) 
 }
 
 export async function getServerSideProps({ req, query }) {
-  const { EXT_ADMIN_VICE_ACCESS_REQUEST_API_URL } = require('../../constants/server');
-  
-  const service = await req.api.service(query.id)
-  let viceStatus
+  try {
+    const { EXT_ADMIN_VICE_ACCESS_REQUEST_API_URL } = require('../../constants/server');
+    const config = require('../../api/lib/config');
 
-  // Special case: fetch VICE access request status
-  if (service.name == 'DE - VICE') {
-    const user = await req.api.user()
+    if (!req.api) {
+      throw new Error('API not available on request object')
+    }
 
-    // Get Terrain token
-    let resp = await fetch(`${terrainConfig.url}/token/keycloak`, { 
-      headers: { 'Authorization': 'Basic ' + Buffer.from(terrainConfig.user + ':' + terrainConfig.password).toString('base64') }
-    })
-    let data = await resp.json()
+    const service = await req.api.service(query.id)
+    if (!service) {
+      return {
+        notFound: true
+      }
+    }
 
-    // Get concurrent jobs setting
-    resp = await fetch(`${EXT_ADMIN_VICE_ACCESS_REQUEST_API_URL}/${user.username}`, { 
-      headers: { 'Authorization': `Bearer ${data.access_token}` }
-    })
-    data = await resp.json()
-    viceStatus = (data && data.concurrent_jobs && data.concurrent_jobs > 0)
+    let viceStatus = null
+
+    // Special case: fetch VICE access request status
+    if (service.name == 'DE - VICE') {
+      const user = await req.api.user()
+      const terrainConfig = config.getTerrainConfig();
+
+      // Get Terrain token
+      let resp = await fetch(`${terrainConfig.url}/token/keycloak`, {
+        headers: { 'Authorization': 'Basic ' + Buffer.from(terrainConfig.user + ':' + terrainConfig.password).toString('base64') }
+      })
+      let data = await resp.json()
+
+      // Get concurrent jobs setting
+      resp = await fetch(`${EXT_ADMIN_VICE_ACCESS_REQUEST_API_URL}/${user.username}`, {
+        headers: { 'Authorization': `Bearer ${data.access_token}` }
+      })
+      data = await resp.json()
+      viceStatus = (data && data.concurrent_jobs && data.concurrent_jobs > 0)
+    }
+
+    return { props: { service, viceStatus } }
+  } catch (error) {
+    console.error('Error in getServerSideProps:', error)
+    return {
+      notFound: true
+    }
   }
-
-  return { props: { service, viceStatus } }
 }
 
 export default Service

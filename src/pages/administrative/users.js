@@ -120,7 +120,7 @@ const UserTable = ({ rows, rowsPerPage, count, page, handleChangePage, handleCha
       <TableBody>
         {rows.map((user, index) => {
           const d = new Date(user.date_joined)
-          const parts = user.email.split('@')
+          const parts = (user.email || '').split('@')
           return (
             <TableRow key={index} hover style={{cursor: 'pointer'}}>
               <TableCell colSpan={7}>
@@ -130,9 +130,9 @@ const UserTable = ({ rows, rowsPerPage, count, page, handleChangePage, handleCha
                     <Grid item xs={2} style={{whiteSpace:'nowrap'}}>{user.username}<CopyToClipboardButton text={user.username} /></Grid>
                     <Grid item xs={2} style={{whiteSpace:'nowrap'}}>{parts[0]}<wbr />@{parts[1]}<CopyToClipboardButton text={user.email} /></Grid>
                     <Grid item xs={2}>{user.institution}</Grid>
-                    <Grid item xs={2}>{user.occupation.name}</Grid>
-                    <Grid item xs={1}>{user.region.name}</Grid>
-                    <Grid item xs={2}>{user.region.country.name}</Grid>
+                    <Grid item xs={2}>{user?.occupation?.name || 'Not specified'}</Grid>
+                    <Grid item xs={1}>{user?.region?.name || 'Not specified'}</Grid>
+                    <Grid item xs={2}>{user?.region?.country?.name || 'Not specified'}</Grid>
                     {/* <Grid item xs={1} style={{whiteSpace:'nowrap'}}>{(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear()}</Grid> */}
                   </Grid>
                 </Link>

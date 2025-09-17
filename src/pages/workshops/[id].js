@@ -58,7 +58,7 @@ const WorkshopViewer = (props) => {
   const [user] = useUser()
   const [_, setError] = useError()
 
-  const userWorkshop = user.workshops.find(w => w.id == workshop.id)
+  const userWorkshop = (user?.workshops || []).find(w => w.id == workshop.id)
   const request = userWorkshop && userWorkshop.api_workshopenrollmentrequest
 
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -1086,23 +1086,23 @@ const Requests = ({ requests, submitHandler }) => {
                       </TableRow>
                       <TableRow>
                         <TableCell className={classes.cell}>Occupation</TableCell>
-                        <TableCell className={classes.cell}>{user.occupation.name}</TableCell>
+                        <TableCell className={classes.cell}>{user?.occupation?.name || 'Not specified'}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className={classes.cell}>Country</TableCell>
-                        <TableCell className={classes.cell}>{user.region.country.name}</TableCell>
+                        <TableCell className={classes.cell}>{user?.region?.country?.name || 'Not specified'}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className={classes.cell}>Region</TableCell>
-                        <TableCell className={classes.cell}>{user.region.name}</TableCell>
+                        <TableCell className={classes.cell}>{user?.region?.name || 'Not specified'}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className={classes.cell}>Research Area</TableCell>
-                        <TableCell className={classes.cell}>{user.research_area.name}</TableCell>
+                        <TableCell className={classes.cell}>{user?.research_area?.name || 'Not specified'}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className={classes.cell}>Funding Agency</TableCell>
-                        <TableCell className={classes.cell}>{user.funding_agency.name}</TableCell>
+                        <TableCell className={classes.cell}>{user?.funding_agency?.name || 'Not specified'}</TableCell>
                       </TableRow>
                       <TableRow>
                         <Link href={`/administrative/users/${user.id}`}>View Details</Link>
@@ -1263,8 +1263,43 @@ const SearchUsersDialog = ({ open, title, description, handleClose, handleSubmit
 }
 
 export async function getServerSideProps({ req, query }) {
-  const workshop = await req.api.workshop(query.id)
-  return { props: { workshop } }
+  try {
+    if (!req.api) {
+      console.error('API middleware not available on request object')
+      return {
+        redirect: {
+          destination: '/workshops',
+          permanent: false,
+        },
+      }
+    }
+
+    const workshop = await req.api.workshop(query.id)
+    if (!workshop) {
+      return {
+        notFound: true
+      }
+    }
+
+    return { props: { workshop } }
+  } catch (error) {
+    console.error('Error in getServerSideProps:', error.message, error)
+
+    // If it's an API availability issue, redirect to workshops list
+    if (error.message?.includes('API not available')) {
+      return {
+        redirect: {
+          destination: '/workshops',
+          permanent: false,
+        },
+      }
+    }
+
+    // For other errors (like workshop not found), show 404
+    return {
+      notFound: true
+    }
+  }
 }
 
 export default Workshop

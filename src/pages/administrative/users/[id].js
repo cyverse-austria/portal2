@@ -180,7 +180,7 @@ const User = ({ user, history, ldap }) => {
         <Paper elevation={3} className={classes.paper}>
           <Typography component="div" variant="h5">Email</Typography> 
           <List style={{maxWidth: '30em'}}>
-            {user.emails.map(email => (
+            {(user?.emails || []).map(email => (
               <ListItem key={email.id}>
                 <ListItemAvatar>
                   <Avatar>
@@ -222,10 +222,10 @@ const User = ({ user, history, ldap }) => {
               </Button>
             </Grid>
           </Grid>
-          <ServicesList services={user.services} />
-          <AddServiceDialog 
+          <ServicesList services={user?.services || []} />
+          <AddServiceDialog
             open={showAddServiceDialog}
-            services={user.services}
+            services={user?.services || []}
             allServices={services}
             handleClose={() => setShowAddServiceDialog(false)} 
             handleSubmit={(serviceId) => {
@@ -240,19 +240,19 @@ const User = ({ user, history, ldap }) => {
           <br />
           <div>Company/Institution: {user.institution}</div>
           <div>Department: {user.department}</div>
-          <div>Occupation: {user.occupation.name}</div>
-          <div>Country: {user.region.country.name}</div>
-          <div>Region: {user.region.name}</div>
-          <div>Research Area: {user.research_area.name}</div>
-          <div>Funding Agency: {user.funding_agency.name}</div>
-          <div>Gender Identity: {user.gender.name}</div>
-          <div>Ethnicity: {user.ethnicity.name}</div>
+          <div>Occupation: {user?.occupation?.name || 'Not specified'}</div>
+          <div>Country: {user?.region?.country?.name || 'Not specified'}</div>
+          <div>Region: {user?.region?.name || 'Not specified'}</div>
+          <div>Research Area: {user?.research_area?.name || 'Not specified'}</div>
+          <div>Funding Agency: {user?.funding_agency?.name || 'Not specified'}</div>
+          <div>Gender Identity: {user?.gender?.name || 'Not specified'}</div>
+          <div>Ethnicity: {user?.ethnicity?.name || 'Not specified'}</div>
         </Paper>
 
         <Paper elevation={3} className={classes.paper}>
-          <Typography component="div" variant="h5">Preferences</Typography> 
+          <Typography component="div" variant="h5">Preferences</Typography>
           <br />
-          <div>How did you hear about us? {user.aware_channel.name}</div>
+          <div>How did you hear about us? {user?.aware_channel?.name || 'Not specified'}</div>
           <div>Receive the CyVerse Newsletter? {user.subscribe_to_newsletter ? 'Yes' : 'No'}</div>
           <div>Participate in a research study about your use of CyVerse applications and services? {user.participate_in_study ? 'Yes' : 'No'}</div>
         </Paper>

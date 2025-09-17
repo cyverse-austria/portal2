@@ -127,6 +127,25 @@ app.prepare()
         // Configure Keycloak
         server.use(keycloakClient.middleware({ logout: '/logout' }))
 
+        // Setup API client for use by getServerSideProps() - MOVED HERE to ensure it runs for all requests
+        server.use(async (req, _, next) => {
+            try {
+                const token = getUserToken(req)
+                req.api = new PortalAPI({
+                    baseUrl: config.getUiConfig().baseUrl + '/api',
+                    token: token ? token.token : null,
+                })
+            } catch (error) {
+                console.error('Failed to initialize API client:', error)
+                // Always ensure req.api exists, even if initialization failed
+                req.api = new PortalAPI({
+                    baseUrl: '/api',
+                    token: null,
+                })
+            }
+            next()
+        })
+
         // For "sign in" button on landing page
         server.get('/login', keycloakClient.protect(), (_, res) => {
             res.redirect('/')
@@ -146,15 +165,6 @@ app.prepare()
         //        return nextHandler(req, res)
         //    })
 
-        // Setup API client for use by getServerSideProps()
-        server.use(async (req, _, next) => {
-            const token = getUserToken(req)
-            req.api = new PortalAPI({
-                baseUrl: config.getUiConfig().baseUrl + '/api',
-                token: token ? token.token : null,
-            })
-            next()
-        })
 
         // Save web socket handle
         server.use((req, _, next) => {

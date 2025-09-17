@@ -122,7 +122,7 @@ const RequestTable = ({ rows, rowsPerPage, count, page, handleChangePage, handle
               <TableCell>{request.service.name}</TableCell>
               <TableCell>{request.user.username}</TableCell>
               <TableCell>{request.user.email}</TableCell>
-              <TableCell>{request.user.region.country.name}</TableCell>
+              <TableCell>{request?.user?.region?.country?.name || 'Not specified'}</TableCell>
               <TableCell>
                 <DateSpan date={request.updated_at} />
               </TableCell>

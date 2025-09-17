@@ -153,7 +153,7 @@ const Account = () => {
                   onSubmit={(values, { setSubmitting }) => {
                     // Special case: reset region_id to "not provided" if country_id changed
                     const countryId = values['country_id']
-                    if (countryId && countryId != user.region.country_id) {
+                    if (countryId && countryId != user?.region?.country_id) {
                       const region = regions[countryId].find(r => r.name == "Not Provided")
                       if (region)
                         values['region_id'] = region.id
@@ -321,21 +321,21 @@ const getForms = ({ user, countries, regions, institutions, institutionKeyword, 
           name: "Occupation",
           type: "select",
           required: true,
-          value: user.occupation.id,
+          value: user?.occupation?.id,
           options: properties.occupations
         },
         { id: "research_area_id",
           name: "Research Area",
           type: "select",
           required: true,
-          value: user.research_area.id,
+          value: user?.research_area?.id,
           options: properties.research_areas
         },
         { id: "funding_agency_id",
           name: "Funding Agency",
           type: "select",
           required: true,
-          value: user.funding_agency.id,
+          value: user?.funding_agency?.id,
           options: properties.funding_agencies
         }
       ]
@@ -347,28 +347,28 @@ const getForms = ({ user, countries, regions, institutions, institutionKeyword, 
           name: "Country",
           type: "autocomplete",
           required: true,
-          value: user.region.country_id,
+          value: user?.region?.country_id,
           options: countries,
         },
         { id: "region_id",
           name: "Region",
           type: "select",
           required: true,
-          value: user.region.id,
-          options: regions[user.region.country_id]
+          value: user?.region?.id,
+          options: regions[user?.region?.country_id] || []
         },
         { id: "gender_id",
           name: "Gender Identity",
           type: "select",
           required: true,
-          value: user.gender.id,
+          value: user?.gender?.id,
           options: properties.genders
         },
         { id: "ethnicity_id",
           name: "Ethnicity",
           type: "select",
           required: true,
-          value: user.ethnicity.id,
+          value: user?.ethnicity?.id,
           options: properties.ethnicities
         },
         // { id: "aware_channel_id",
