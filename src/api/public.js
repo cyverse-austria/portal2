@@ -140,7 +140,11 @@ router.put('/users', asyncHandler(async (req, res) => {
         return res.status(400).send('Email already in use');
 
     // Set defaults
-    fields['password'] = '';
+    if (fields['password'] == null) {
+        fields['password'] = '';
+    } else {
+        fields['password'] = encodePassword(fields['password']);
+    }
     fields['email'] = fields['email'].toLowerCase();
     fields['is_superuser'] = false;
     fields['is_staff'] = false;
@@ -157,7 +161,7 @@ router.put('/users', asyncHandler(async (req, res) => {
 
     // Create user
     logger.info('Creating user', fields['username']);
-    let newUser = await User.create(fields)
+    let newUser = await User.create(fields);
     if (!newUser)
         return res.status(500).send('Error creating user');
 
