@@ -9,16 +9,19 @@ async function terrainSubmitViceAccessRequest(token, user, usage) {
         concurrent_jobs: 2, //FIXME hardcoded
     }
 
-    const response = await fetch(joinUrl(config.getTerrainConfig().url, 'requests', 'vice'), {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    });
+    const response = await fetch(
+        joinUrl(config.getTerrainConfig().url, 'requests', 'vice'),
+        {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        }
+    )
 
-    return response;
+    return response
 }
 
 module.exports = {

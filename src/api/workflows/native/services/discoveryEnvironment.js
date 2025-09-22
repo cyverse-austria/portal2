@@ -3,7 +3,7 @@ const {
     addToMailingList,
     validateRegistrationRequest,
     logServiceRegistration,
-    logServiceRegistrationError
+    logServiceRegistrationError,
 } = require('./utils')
 
 /**
@@ -45,27 +45,39 @@ async function registerDiscoveryEnvironmentUser(user, service) {
         results.deMailingList = deMailingListResult
 
         // Add user to datastore users mailing list
-        logServiceRegistration(user, service, 'adding to datastore-users mailing list')
+        logServiceRegistration(
+            user,
+            service,
+            'adding to datastore-users mailing list'
+        )
         const datastoreMailingListResult = await addToMailingList(
             'datastore-users',
             user.email
         )
         results.datastoreMailingList = datastoreMailingListResult
 
-        logServiceRegistration(user, service, 'registration completed successfully')
+        logServiceRegistration(
+            user,
+            service,
+            'registration completed successfully'
+        )
         return {
             success: true,
             service: 'DISCOVERY_ENVIRONMENT',
             user: user.username,
-            actions: results
+            actions: results,
         }
-
     } catch (error) {
-        logServiceRegistrationError(user, service, 'discovery environment registration', error)
+        logServiceRegistrationError(
+            user,
+            service,
+            'discovery environment registration',
+            error
+        )
         throw error
     }
 }
 
 module.exports = {
-    register: registerDiscoveryEnvironmentUser
+    register: registerDiscoveryEnvironmentUser,
 }

@@ -3,11 +3,11 @@ const UserContext = React.createContext()
 UserContext.displayName = 'User'
 
 function useUser() {
-  const context = React.useContext(UserContext)
-  if (!context) {
-    throw new Error(`useUser must be used within a UserProvider`)
-  }
-  return context
+    const context = React.useContext(UserContext)
+    if (!context) {
+        throw new Error(`useUser must be used within a UserProvider`)
+    }
+    return context
 }
 
 //FIXME
@@ -18,9 +18,9 @@ function useUser() {
 // }
 
 function UserProvider(props) {
-  const [user, setUser] = React.useState(props.user)
-  const value = React.useMemo(() => [user, setUser], [user])
-  return <UserContext.Provider value={value} {...props} />
+    const [user, setUser] = React.useState(props.user)
+    const value = React.useMemo(() => [user, setUser], [user])
+    return <UserContext.Provider value={value} {...props} />
 }
 
-export { UserProvider, useUser };
+export { UserProvider, useUser }

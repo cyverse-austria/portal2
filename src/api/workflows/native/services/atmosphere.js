@@ -3,7 +3,7 @@ const {
     addToMailingList,
     validateRegistrationRequest,
     logServiceRegistration,
-    logServiceRegistrationError
+    logServiceRegistrationError,
 } = require('./utils')
 
 /**
@@ -43,20 +43,28 @@ async function registerAtmosphereUser(user, service) {
         )
         results.mailingList = mailingListResult
 
-        logServiceRegistration(user, service, 'registration completed successfully')
+        logServiceRegistration(
+            user,
+            service,
+            'registration completed successfully'
+        )
         return {
             success: true,
             service: 'ATMOSPHERE',
             user: user.username,
-            actions: results
+            actions: results,
         }
-
     } catch (error) {
-        logServiceRegistrationError(user, service, 'atmosphere registration', error)
+        logServiceRegistrationError(
+            user,
+            service,
+            'atmosphere registration',
+            error
+        )
         throw error
     }
 }
 
 module.exports = {
-    register: registerAtmosphereUser
+    register: registerAtmosphereUser,
 }

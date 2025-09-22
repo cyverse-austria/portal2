@@ -1,4 +1,3 @@
-
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
@@ -15,11 +14,11 @@ const ws = require('ws')
 const config = require('./api/lib/config')
 
 // Initialize configuration
-config.init();
-const serverConfig = config.getServerConfig();
-const sentryConfig = config.getSentryConfig();
+config.init()
+const serverConfig = config.getServerConfig()
+const sentryConfig = config.getSentryConfig()
 
-const isDevelopment = serverConfig.isDevelopment;
+const isDevelopment = serverConfig.isDevelopment
 const app = next({ dev: isDevelopment })
 const nextHandler = app.getRequestHandler()
 
@@ -27,7 +26,9 @@ const nextHandler = app.getRequestHandler()
 if (sentryConfig.dsn) {
     Sentry.init({
         dsn: sentryConfig.dsn,
-        environment: process.env.NODE_ENV || (isDevelopment ? 'development' : 'production'),
+        environment:
+            process.env.NODE_ENV ||
+            (isDevelopment ? 'development' : 'production'),
     })
 } else {
     console.log('Sentry is disabled')
@@ -49,7 +50,7 @@ function buildPostgresUrl(settings) {
 
 // Configure the session store
 const pgSession = pgsimple(session)
-const dbConfig = config.getDbConfig();
+const dbConfig = config.getDbConfig()
 const pgUrl = buildPostgresUrl({
     host: dbConfig.host,
     port: dbConfig.port,
@@ -57,7 +58,7 @@ const pgUrl = buildPostgresUrl({
     user: dbConfig.user,
     password: dbConfig.password,
 })
-const sessionConfig = config.getSessionConfig();
+const sessionConfig = config.getSessionConfig()
 const sessionStore = new pgSession({
     conString: pgUrl,
     tableName: dbConfig.sessionTable,
@@ -68,12 +69,12 @@ const sessionStore = new pgSession({
 // Configure the Keycloak client
 Keycloak.prototype.accessDenied = function (request, response) {
     console.log('Access denied, redirecting !!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    const uiConfig = config.getUiConfig();
+    const uiConfig = config.getUiConfig()
     response.redirect(uiConfig.baseUrl)
     //response.status(403);
     //response.end('Access denied');
 }
-const keycloakConfig = config.getKeycloakConfig();
+const keycloakConfig = config.getKeycloakConfig()
 const keycloakClient = new Keycloak(
     { store: sessionStore },
     {
@@ -165,7 +166,6 @@ app.prepare()
         //        return nextHandler(req, res)
         //    })
 
-
         // Save web socket handle
         server.use((req, _, next) => {
             const username = getUserID(req)
@@ -249,12 +249,12 @@ app.prepare()
             const username = getUserID(req)
             if (username) {
                 sockets[username] = ws
-                
+
                 ws.on('close', () => {
                     delete sockets[username]
                 })
             }
-            
+
             ws.send(
                 JSON.stringify({
                     type: WS_CONNECTED,

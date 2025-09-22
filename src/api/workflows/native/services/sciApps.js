@@ -2,7 +2,7 @@ const {
     registerDatastoreService,
     validateRegistrationRequest,
     logServiceRegistration,
-    logServiceRegistrationError
+    logServiceRegistrationError,
 } = require('./utils')
 
 /**
@@ -34,20 +34,28 @@ async function registerSciAppsUser(user, service) {
         )
         results.datastore = datastoreResult
 
-        logServiceRegistration(user, service, 'registration completed successfully')
+        logServiceRegistration(
+            user,
+            service,
+            'registration completed successfully'
+        )
         return {
             success: true,
             service: 'SCI_APPS',
             user: user.username,
-            actions: results
+            actions: results,
         }
-
     } catch (error) {
-        logServiceRegistrationError(user, service, 'sciapps registration', error)
+        logServiceRegistrationError(
+            user,
+            service,
+            'sciapps registration',
+            error
+        )
         throw error
     }
 }
 
 module.exports = {
-    register: registerSciAppsUser
+    register: registerSciAppsUser,
 }

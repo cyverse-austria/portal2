@@ -18,7 +18,9 @@ async function userCreationWorkflow(user) {
     const uidNumberOffset = securityConfig?.uidNumberOffset || 2831
     const uidNumber = user.id + uidNumberOffset
 
-    logger.info(`Generating uidNumber for user ${user.username}: ${uidNumber} (id: ${user.id} + offset: ${uidNumberOffset})`)
+    logger.info(
+        `Generating uidNumber for user ${user.username}: ${uidNumber} (id: ${user.id} + offset: ${uidNumberOffset})`
+    )
 
     const requestBody = {
         first_name: user.first_name,
@@ -33,11 +35,15 @@ async function userCreationWorkflow(user) {
     }
 
     try {
-        const response = await axios.post(joinUrl(baseUrl, 'users'), requestBody, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
+        const response = await axios.post(
+            joinUrl(baseUrl, 'users'),
+            requestBody,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        )
         logger.info(`User creation request successful for ${user.username}`)
         return response.data
     } catch (error) {
@@ -98,7 +104,9 @@ async function userDeletionWorkflow(user) {
     }
 
     try {
-        const response = await axios.delete(joinUrl(baseUrl, 'users', user.username))
+        const response = await axios.delete(
+            joinUrl(baseUrl, 'users', user.username)
+        )
         logger.info(`User deletion request successful for ${user.username}`)
         return response.data
     } catch (error) {

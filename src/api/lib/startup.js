@@ -1,4 +1,4 @@
-const config = require('./config');
+const config = require('./config')
 
 /**
  * Validate application startup configuration
@@ -6,72 +6,85 @@ const config = require('./config');
  */
 function validateStartupConfiguration() {
     // Get logger with fallback - ensure we always have a working logger
-    let logger = console;
+    let logger = console
     try {
-        const { logger: winLogger } = require('./logging');
+        const { logger: winLogger } = require('./logging')
         if (winLogger && winLogger.info && winLogger.error) {
-            logger = winLogger;
+            logger = winLogger
         }
     } catch (error) {
         // Keep using console fallback
     }
-    
+
     try {
         // Initialize and validate configuration
-        config.init();
-        
+        config.init()
+
         // Test database configuration
-        const dbConfig = config.getDbConfig();
-        logger.info(`Database configuration validated: ${dbConfig.host}:${dbConfig.port}/${dbConfig.name}`);
-        
+        const dbConfig = config.getDbConfig()
+        logger.info(
+            `Database configuration validated: ${dbConfig.host}:${dbConfig.port}/${dbConfig.name}`
+        )
+
         // Test authentication configuration
-        const keycloakConfig = config.getKeycloakConfig();
-        logger.info(`Keycloak configuration validated: ${keycloakConfig.realm} @ ${keycloakConfig.authUrl}`);
-        
+        const keycloakConfig = config.getKeycloakConfig()
+        logger.info(
+            `Keycloak configuration validated: ${keycloakConfig.realm} @ ${keycloakConfig.authUrl}`
+        )
+
         // Test session configuration
-        const sessionConfig = config.getSessionConfig();
-        logger.info(`Session configuration validated: TTL=${sessionConfig.ttl}s, Secure=${sessionConfig.secureCookie}`);
-        
+        const sessionConfig = config.getSessionConfig()
+        logger.info(
+            `Session configuration validated: TTL=${sessionConfig.ttl}s, Secure=${sessionConfig.secureCookie}`
+        )
+
         // Test UI configuration
-        const uiConfig = config.getUiConfig();
-        logger.info(`UI configuration validated: ${uiConfig.baseUrl}`);
-        
+        const uiConfig = config.getUiConfig()
+        logger.info(`UI configuration validated: ${uiConfig.baseUrl}`)
+
         // Test optional external service configurations
-        const portalConductorConfig = config.getPortalConductorConfig();
+        const portalConductorConfig = config.getPortalConductorConfig()
         if (portalConductorConfig.url) {
-            logger.info(`Portal Conductor URL configured: ${portalConductorConfig.url}`);
+            logger.info(
+                `Portal Conductor URL configured: ${portalConductorConfig.url}`
+            )
         } else {
-            logger.warn('Portal Conductor URL not configured - some workflows may fail');
+            logger.warn(
+                'Portal Conductor URL not configured - some workflows may fail'
+            )
         }
-        
-        const terrainConfig = config.getTerrainConfig();
+
+        const terrainConfig = config.getTerrainConfig()
         if (terrainConfig.url) {
-            logger.info(`Terrain URL configured: ${terrainConfig.url}`);
+            logger.info(`Terrain URL configured: ${terrainConfig.url}`)
         } else {
-            logger.warn('Terrain URL not configured - VICE access requests may fail');
+            logger.warn(
+                'Terrain URL not configured - VICE access requests may fail'
+            )
         }
-        
+
         // Test feature flags
-        const features = config.getFeatures();
-        logger.info(`Feature flags: Intercom=${features.intercomEnabled}`);
-        
+        const features = config.getFeatures()
+        logger.info(`Feature flags: Intercom=${features.intercomEnabled}`)
+
         // Test optional integrations
-        const sentryConfig = config.getSentryConfig();
+        const sentryConfig = config.getSentryConfig()
         if (sentryConfig.dsn) {
-            logger.info('Sentry error tracking configured');
+            logger.info('Sentry error tracking configured')
         } else {
-            logger.info('Sentry error tracking not configured');
+            logger.info('Sentry error tracking not configured')
         }
-        
-        
-        logger.info('✓ Application configuration validation completed successfully');
-        return true;
+
+        logger.info(
+            '✓ Application configuration validation completed successfully'
+        )
+        return true
     } catch (error) {
-        logger.error('✗ Configuration validation failed:', error.message);
-        throw error;
+        logger.error('✗ Configuration validation failed:', error.message)
+        throw error
     }
 }
 
 module.exports = {
-    validateStartupConfiguration
-};
+    validateStartupConfiguration,
+}

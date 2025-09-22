@@ -25,7 +25,14 @@
   },
   "portalConductor": {
     "url": "https://your-portal-conductor-url",
-    "retries": 5
+    "retries": 5,
+    "auth": {
+      "username": "admin",
+      "password": "$2b$12$zVcV0clQCksXZOfBjTjdYuVBy9cnq5dx4zkoVTcX/nWTqj8GoRobG"
+    },
+    "ssl": {
+      "rejectUnauthorized": false
+    }
   },
   "terrain": {
     "url": "https://your-terrain-url",

@@ -26,7 +26,7 @@ const serviceImplementations = {
     COGE: coge,
     DISCOVERY_ENVIRONMENT: discoveryEnvironment,
     SCI_APPS: sciApps,
-    VICE: vice
+    VICE: vice,
 }
 
 /**
@@ -63,5 +63,5 @@ module.exports = {
     serviceImplementations,
     getSupportedServices,
     isServiceSupported,
-    getServiceImplementation
+    getServiceImplementation,
 }

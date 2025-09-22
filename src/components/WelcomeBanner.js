@@ -3,7 +3,7 @@ import { Paper, Grid, Box, Button, Typography } from '@mui/material'
 import BannerImage from './svg/bannerImage'
 import { makeStyles } from '../styles/tss'
 
-const useStyles = makeStyles()((theme) => ({
+const useStyles = makeStyles()(theme => ({
     button: {
         margin: theme.spacing(1),
     },
@@ -26,7 +26,7 @@ const useStyles = makeStyles()((theme) => ({
         padding: theme.spacing(3),
         textAlign: 'center',
         color: theme.palette.text.secondary,
-    }
+    },
 }))
 
 const WelcomeBanner = ({ closeHandler }) => {
@@ -42,15 +42,24 @@ const WelcomeBanner = ({ closeHandler }) => {
                     alignItems="center"
                     spacing={4}
                 >
-                    <Grid item sm={12} md={5} lg={5} className={classes.bannerImage}>
+                    <Grid
+                        item
+                        sm={12}
+                        md={5}
+                        lg={5}
+                        className={classes.bannerImage}
+                    >
                         <BannerImage />
                     </Grid>
-                    <Grid item xs={12} sm={12} md={7} lg={6} className={classes.padding}>
-                        <Typography
-                            component="h1"
-                            variant="h4"
-                            color="primary"
-                        >
+                    <Grid
+                        item
+                        xs={12}
+                        sm={12}
+                        md={7}
+                        lg={6}
+                        className={classes.padding}
+                    >
+                        <Typography component="h1" variant="h4" color="primary">
                             Welcome to the
                             <br />
                             CyVerse User Portal
@@ -62,9 +71,8 @@ const WelcomeBanner = ({ closeHandler }) => {
                             component="p"
                         >
                             The User Portal is the place to customize your
-                            CyVerse experience. Request access to
-                            services and explore learning materials and
-                            workshops.
+                            CyVerse experience. Request access to services and
+                            explore learning materials and workshops.
                         </Typography>
                         <br />
                         <Button
@@ -89,7 +97,9 @@ const WelcomeBanner = ({ closeHandler }) => {
                         </Button>
                         <br />
                         <br />
-                        <Button size="small" onClick={closeHandler}>Close and don't show again</Button>
+                        <Button size="small" onClick={closeHandler}>
+                            Close and don't show again
+                        </Button>
                     </Grid>
                 </Grid>
             </Paper>

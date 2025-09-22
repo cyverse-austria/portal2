@@ -2,7 +2,7 @@ const {
     registerDatastoreService,
     validateRegistrationRequest,
     logServiceRegistration,
-    logServiceRegistrationError
+    logServiceRegistrationError,
 } = require('./utils')
 
 /**
@@ -33,14 +33,17 @@ async function registerCogeUser(user, service) {
         )
         results.datastore = datastoreResult
 
-        logServiceRegistration(user, service, 'registration completed successfully')
+        logServiceRegistration(
+            user,
+            service,
+            'registration completed successfully'
+        )
         return {
             success: true,
             service: 'COGE',
             user: user.username,
-            actions: results
+            actions: results,
         }
-
     } catch (error) {
         logServiceRegistrationError(user, service, 'coge registration', error)
         throw error
@@ -48,5 +51,5 @@ async function registerCogeUser(user, service) {
 }
 
 module.exports = {
-    register: registerCogeUser
+    register: registerCogeUser,
 }

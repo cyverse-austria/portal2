@@ -1,11 +1,11 @@
 import React from 'react'
-import getConfig from "next/config"
+import getConfig from 'next/config'
 import { Grid, Link, Box, Divider, Typography } from '@mui/material'
 import { Layout, intercomShow, getMenuItem } from '../components'
 import { makeStyles } from '../styles/tss'
-import HelpCard from "../components/HelpCard"
+import HelpCard from '../components/HelpCard'
 
-const useStyles = makeStyles()((theme) => ({
+const useStyles = makeStyles()(theme => ({
     helpLink: {
         [theme.breakpoints.down('sm')]: { display: 'none' },
     },
@@ -24,7 +24,10 @@ const Help = () => {
     )
 
     return (
-        <Layout title="Help" actions={config.INTERCOM_ENABLED ? chatLink : null}>
+        <Layout
+            title="Help"
+            actions={config.INTERCOM_ENABLED ? chatLink : null}
+        >
             <Box mt={3}>
                 <Typography variant="h6">Learn</Typography>
                 <Divider />
@@ -45,7 +48,6 @@ const Help = () => {
                                     title={item.label}
                                     icon={item.icon}
                                     description={item.description}
-                                    
                                 />
                             </Link>
                         </Grid>
@@ -53,9 +55,7 @@ const Help = () => {
                 </Grid>
             </Box>
             <Box mt={4}>
-                <Typography variant="h6">
-                    Support
-                </Typography>
+                <Typography variant="h6">Support</Typography>
                 <Divider />
                 <br />
                 <Grid container spacing={4}>

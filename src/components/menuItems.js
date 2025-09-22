@@ -21,7 +21,7 @@ import SvgForumIcon from './svg/forumIcon'
 import SvgStatusIcon from './svg/statusIcon'
 import SvgRocketIcon from './svg/rocketIcon'
 
-import getConfig from "next/config"
+import getConfig from 'next/config'
 const config = getConfig().publicRuntimeConfig
 
 const menuItems = [
@@ -67,8 +67,7 @@ const menuItems = [
             {
                 label: 'Webinars',
                 path: 'https://www.youtube.com/@CyverseOrgProject',
-                description:
-                    'Browse webinars on how to use CyVerse services.',
+                description: 'Browse webinars on how to use CyVerse services.',
                 category: 'learn',
                 icon: <SvgVideoIcon />,
             },
@@ -88,7 +87,7 @@ const menuItems = [
             },
             {
                 label: 'Tour',
-                path: config.TOUR_URL || "https://learning.cyverse.org/mooc/",
+                path: config.TOUR_URL || 'https://learning.cyverse.org/mooc/',
                 description: 'A self-guided tour of CyVerse.',
                 category: 'support',
                 icon: <SvgForumIcon />,
@@ -103,7 +102,8 @@ const menuItems = [
             {
                 label: 'Status',
                 path: 'http://status.cyverse.org/',
-                description: 'View operational status of all CyVerse resources.',
+                description:
+                    'View operational status of all CyVerse resources.',
                 category: 'support',
                 icon: <SvgStatusIcon />,
             },

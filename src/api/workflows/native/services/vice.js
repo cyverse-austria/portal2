@@ -2,7 +2,7 @@ const {
     setJobLimits,
     validateRegistrationRequest,
     logServiceRegistration,
-    logServiceRegistrationError
+    logServiceRegistrationError,
 } = require('./utils')
 
 /**
@@ -27,20 +27,20 @@ async function registerViceUser(user, service) {
 
         // Set VICE job limits for the user (default: 2 concurrent jobs)
         logServiceRegistration(user, service, 'setting job limits')
-        const jobLimitsResult = await setJobLimits(
-            user.username,
-            2
-        )
+        const jobLimitsResult = await setJobLimits(user.username, 2)
         results.jobLimits = jobLimitsResult
 
-        logServiceRegistration(user, service, 'registration completed successfully')
+        logServiceRegistration(
+            user,
+            service,
+            'registration completed successfully'
+        )
         return {
             success: true,
             service: 'VICE',
             user: user.username,
-            actions: results
+            actions: results,
         }
-
     } catch (error) {
         logServiceRegistrationError(user, service, 'vice registration', error)
         throw error
@@ -48,5 +48,5 @@ async function registerViceUser(user, service) {
 }
 
 module.exports = {
-    register: registerViceUser
+    register: registerViceUser,
 }

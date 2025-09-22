@@ -1,19 +1,19 @@
-import React from "react";
+import React from 'react'
 
-const ConfigContext = React.createContext();
+const ConfigContext = React.createContext()
 ConfigContext.displayName = 'Config'
 
 function useConfig() {
-    const context = React.useContext(ConfigContext);
+    const context = React.useContext(ConfigContext)
     if (!context) {
-        throw new Error(`useConfig must be used within a ConfigProvider`);
+        throw new Error(`useConfig must be used within a ConfigProvider`)
     }
-    return context;
+    return context
 }
 
 function ConfigProvider(props) {
-    const [config] = React.useState(props.config);
-    return <ConfigContext.Provider value={config} {...props} />;
+    const [config] = React.useState(props.config)
+    return <ConfigContext.Provider value={config} {...props} />
 }
 
-export { ConfigProvider, useConfig };
+export { ConfigProvider, useConfig }

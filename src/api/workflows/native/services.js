@@ -1,5 +1,8 @@
 const { logger } = require('../../lib/logging')
-const { getServiceImplementation, isServiceSupported } = require('./services/index')
+const {
+    getServiceImplementation,
+    isServiceSupported,
+} = require('./services/index')
 
 /**
  * Service Registration Workflow Router
@@ -19,7 +22,9 @@ async function serviceRegistrationWorkflow(request) {
     const service = request.service
 
     if (!user || !service) {
-        throw new Error('serviceRegistrationWorkflow: Missing required property')
+        throw new Error(
+            'serviceRegistrationWorkflow: Missing required property'
+        )
     }
 
     const approvalKey = service.approval_key
@@ -50,7 +55,6 @@ async function serviceRegistrationWorkflow(request) {
         )
 
         return result
-
     } catch (error) {
         logger.error(
             `Service registration workflow failed for service ${service.name} and user ${user.username}: ${error.message}`

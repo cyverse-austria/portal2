@@ -1,4 +1,5 @@
 const axios = require('axios')
+const bcrypt = require('bcrypt')
 const { logger } = require('../../../lib/logging')
 const config = require('../../../lib/config')
 const { joinUrl } = require('../../../lib/url')
@@ -74,6 +75,73 @@ function isRetryableError(error) {
 }
 
 /**
+ * Decrypt a bcrypt-hashed password to plaintext
+ * Note: This is needed because portal2 stores the bcrypt hash but needs
+ * to send the plaintext password via Basic Auth to portal-conductor
+ * @param {string} hashedPassword - The bcrypt hash
+ * @param {string} plainPassword - The original plaintext password to verify
+ * @returns {boolean} True if password matches the hash
+ */
+function verifyBcryptPassword(hashedPassword, plainPassword) {
+    try {
+        return bcrypt.compareSync(plainPassword, hashedPassword)
+    } catch (error) {
+        logger.error(`Failed to verify bcrypt password: ${error.message}`)
+        return false
+    }
+}
+
+/**
+ * Get portal-conductor authentication configuration
+ * Note: The password in config is stored as a bcrypt hash, but we need to send
+ * the original plaintext password via Basic Auth to portal-conductor.
+ * This requires the original password to be provided via environment variable.
+ * @returns {Object|null} Authentication configuration with plaintext password
+ */
+function getPortalConductorAuth() {
+    const { auth } = config.getPortalConductorConfig()
+    if (!auth) {
+        return null
+    }
+
+    // Get the original plaintext password from environment variable
+    const plaintextPassword = process.env.PORTAL_CONDUCTOR_PASSWORD
+    if (!plaintextPassword) {
+        throw new Error(
+            'PORTAL_CONDUCTOR_PASSWORD environment variable is required when using bcrypt-hashed password in config'
+        )
+    }
+
+    // Verify that the plaintext password matches the bcrypt hash in config
+    if (!verifyBcryptPassword(auth.password, plaintextPassword)) {
+        throw new Error(
+            'PORTAL_CONDUCTOR_PASSWORD does not match the bcrypt hash in configuration'
+        )
+    }
+
+    // Return auth config with plaintext password for Basic Auth
+    return {
+        username: auth.username,
+        password: plaintextPassword,
+    }
+}
+
+/**
+ * Get portal-conductor SSL configuration
+ * @returns {Object} SSL configuration with defaults
+ */
+function getPortalConductorSslConfig() {
+    const { ssl = {} } = config.getPortalConductorConfig()
+    return {
+        rejectUnauthorized:
+            ssl.rejectUnauthorized !== undefined
+                ? ssl.rejectUnauthorized
+                : false,
+        ...ssl,
+    }
+}
+
+/**
  * Make an HTTP request to portal-conductor with proper error handling and retry logic
  * @param {string} method - HTTP method (GET, POST, DELETE, etc.)
  * @param {string} endpoint - API endpoint relative to base URL
@@ -86,15 +154,34 @@ async function makeRequest(method, endpoint, data = null, options = {}) {
     const baseUrl = getPortalConductorUrl()
     const url = joinUrl(baseUrl, endpoint)
     const maxRetries = getRetryCount()
+    const auth = getPortalConductorAuth()
+    const sslConfig = getPortalConductorSslConfig()
 
     const requestConfig = {
         method,
         url,
         headers: {
             'Content-Type': 'application/json',
-            ...options.headers
+            ...options.headers,
         },
-        ...options
+        httpsAgent:
+            sslConfig.rejectUnauthorized === false
+                ? new (require('https').Agent)({
+                      rejectUnauthorized: false,
+                  })
+                : undefined,
+        ...options,
+    }
+
+    // Add basic authentication if configured
+    if (auth && auth.username && auth.password) {
+        requestConfig.auth = {
+            username: auth.username,
+            password: auth.password,
+        }
+        logger.debug(
+            `Portal-conductor request using basic auth with username: ${auth.username}`
+        )
     }
 
     if (data) {
@@ -105,7 +192,11 @@ async function makeRequest(method, endpoint, data = null, options = {}) {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
-            logger.debug(`Portal-conductor request (attempt ${attempt + 1}/${maxRetries + 1}): ${method} ${requestConfig.url}`)
+            logger.debug(
+                `Portal-conductor request (attempt ${attempt + 1}/${
+                    maxRetries + 1
+                }): ${method} ${requestConfig.url}`
+            )
             if (data) {
                 logger.debug(`Portal-conductor request data:`, data)
             }
@@ -115,7 +206,8 @@ async function makeRequest(method, endpoint, data = null, options = {}) {
         } catch (error) {
             lastError = error
 
-            let errorMessage = error.response?.data?.detail || error.message || 'Unknown error'
+            let errorMessage =
+                error.response?.data?.detail || error.message || 'Unknown error'
 
             // Add more debugging information if error message is still empty or generic
             if (!errorMessage || errorMessage === 'Unknown error') {
@@ -133,18 +225,33 @@ async function makeRequest(method, endpoint, data = null, options = {}) {
 
             if (shouldRetry) {
                 const delay = getBackoffDelay(attempt)
-                logger.warn(`Portal-conductor request failed (attempt ${attempt + 1}/${maxRetries + 1}): ${method} ${endpoint} - ${errorMessage}. Retrying in ${delay}ms...`)
+                logger.warn(
+                    `Portal-conductor request failed (attempt ${attempt + 1}/${
+                        maxRetries + 1
+                    }): ${method} ${endpoint} - ${errorMessage}. Retrying in ${delay}ms...`
+                )
                 await sleep(delay)
             } else {
-                logger.error(`Portal-conductor request failed: ${method} ${endpoint} - ${errorMessage}`)
-                logger.error(`Full error details:`, error.response?.data || error.message || error)
+                logger.error(
+                    `Portal-conductor request failed: ${method} ${endpoint} - ${errorMessage}`
+                )
+                logger.error(
+                    `Full error details:`,
+                    error.response?.data || error.message || error
+                )
                 break
             }
         }
     }
 
     // If we reach here, all retry attempts failed
-    throw new Error(`Portal-conductor API error: ${lastError.response?.data?.detail || lastError.message || 'Unknown error'}`)
+    throw new Error(
+        `Portal-conductor API error: ${
+            lastError.response?.data?.detail ||
+            lastError.message ||
+            'Unknown error'
+        }`
+    )
 }
 
 /**
@@ -154,7 +261,10 @@ async function makeRequest(method, endpoint, data = null, options = {}) {
  * @returns {Promise<Object>} Response data
  */
 async function addUserToLdapGroup(username, groupname) {
-    return await makeRequest('POST', `ldap/users/${username}/groups/${groupname}`)
+    return await makeRequest(
+        'POST',
+        `ldap/users/${username}/groups/${groupname}`
+    )
 }
 
 /**
@@ -173,7 +283,10 @@ async function getUserLdapGroups(username) {
  * @returns {Promise<Object>} Response data
  */
 async function removeUserFromLdapGroup(username, groupname) {
-    return await makeRequest('DELETE', `ldap/users/${username}/groups/${groupname}`)
+    return await makeRequest(
+        'DELETE',
+        `ldap/users/${username}/groups/${groupname}`
+    )
 }
 
 /**
@@ -189,7 +302,11 @@ async function registerDatastoreService(username, irodsPath, irodsUser = null) {
         requestData.irods_user = irodsUser
     }
 
-    return await makeRequest('POST', `datastore/users/${username}/services`, requestData)
+    return await makeRequest(
+        'POST',
+        `datastore/users/${username}/services`,
+        requestData
+    )
 }
 
 /**
@@ -199,7 +316,9 @@ async function registerDatastoreService(username, irodsPath, irodsUser = null) {
  * @returns {Promise<Object>} Response data
  */
 async function addToMailingList(listname, email) {
-    return await makeRequest('POST', `mailinglists/${listname}/members`, { email })
+    return await makeRequest('POST', `mailinglists/${listname}/members`, {
+        email,
+    })
 }
 
 /**
@@ -209,7 +328,10 @@ async function addToMailingList(listname, email) {
  * @returns {Promise<Object>} Response data
  */
 async function removeFromMailingList(listname, email) {
-    return await makeRequest('DELETE', `mailinglists/${listname}/members/${email}`)
+    return await makeRequest(
+        'DELETE',
+        `mailinglists/${listname}/members/${email}`
+    )
 }
 
 /**
@@ -219,7 +341,9 @@ async function removeFromMailingList(listname, email) {
  * @returns {Promise<Object>} Response data
  */
 async function setJobLimits(username, limit) {
-    return await makeRequest('POST', `terrain/users/${username}/job-limits`, { limit })
+    return await makeRequest('POST', `terrain/users/${username}/job-limits`, {
+        limit,
+    })
 }
 
 /**
@@ -233,7 +357,9 @@ function validateRegistrationRequest(user, service) {
         throw new Error('User information is required for service registration')
     }
     if (!service || !service.approval_key) {
-        throw new Error('Service information is required for service registration')
+        throw new Error(
+            'Service information is required for service registration'
+        )
     }
 }
 
@@ -244,7 +370,9 @@ function validateRegistrationRequest(user, service) {
  * @param {string} action - Action performed
  */
 function logServiceRegistration(user, service, action) {
-    logger.info(`Service registration: ${action} for service ${service.approval_key} and user ${user.username}`)
+    logger.info(
+        `Service registration: ${action} for service ${service.approval_key} and user ${user.username}`
+    )
 }
 
 /**
@@ -255,7 +383,9 @@ function logServiceRegistration(user, service, action) {
  * @param {Error} error - Error that occurred
  */
 function logServiceRegistrationError(user, service, action, error) {
-    logger.error(`Service registration failed: ${action} for service ${service.approval_key} and user ${user.username} - ${error.message}`)
+    logger.error(
+        `Service registration failed: ${action} for service ${service.approval_key} and user ${user.username} - ${error.message}`
+    )
 }
 
 module.exports = {
@@ -268,5 +398,5 @@ module.exports = {
     setJobLimits,
     validateRegistrationRequest,
     logServiceRegistration,
-    logServiceRegistrationError
+    logServiceRegistrationError,
 }
