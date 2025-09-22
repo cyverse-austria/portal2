@@ -28,7 +28,7 @@
     "retries": 5,
     "auth": {
       "username": "admin",
-      "password": "$2b$12$zVcV0clQCksXZOfBjTjdYuVBy9cnq5dx4zkoVTcX/nWTqj8GoRobG"
+      "password": "your-portal-conductor-password"
     },
     "ssl": {
       "rejectUnauthorized": false

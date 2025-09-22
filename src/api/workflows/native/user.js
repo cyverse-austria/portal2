@@ -1,19 +1,13 @@
-const axios = require('axios')
 const { logger } = require('../../lib/logging')
-const config = require('../../lib/config')
-const { joinUrl } = require('../../lib/url')
+const { makeRequest } = require('./services/utils')
 
 async function userCreationWorkflow(user) {
     if (!user) throw 'Missing required property'
 
     logger.info(`Running native workflow for user ${user.username}: creation`)
 
-    const { url: baseUrl } = config.getPortalConductorConfig()
-    if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
-    }
-
     // Generate numeric uidNumber for LDAP using user ID + offset
+    const config = require('../../lib/config')
     const securityConfig = config.getSecurityConfig()
     const uidNumberOffset = securityConfig?.uidNumberOffset || 2831
     const uidNumber = user.id + uidNumberOffset
@@ -35,17 +29,9 @@ async function userCreationWorkflow(user) {
     }
 
     try {
-        const response = await axios.post(
-            joinUrl(baseUrl, 'users'),
-            requestBody,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }
-        )
+        const response = await makeRequest('POST', 'users', requestBody)
         logger.info(`User creation request successful for ${user.username}`)
-        return response.data
+        return response
     } catch (error) {
         logger.error(
             `User creation request failed for ${user.username}:`,
@@ -62,27 +48,18 @@ async function userPasswordUpdateWorkflow(user) {
         `Running native workflow for user ${user.username}: password update`
     )
 
-    const { url: baseUrl } = config.getPortalConductorConfig()
-    if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
-    }
-
     try {
-        const response = await axios.post(
-            joinUrl(baseUrl, 'users', user.username, 'password'),
+        const response = await makeRequest(
+            'POST',
+            `users/${user.username}/password`,
             {
                 password: user.password,
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
             }
         )
         logger.info(
             `User password update request successful for ${user.username}`
         )
-        return response.data
+        return response
     } catch (error) {
         logger.error(
             `User password update request failed for ${user.username}:`,
@@ -98,17 +75,10 @@ async function userDeletionWorkflow(user) {
 
     logger.info(`Running native workflow for user ${user.username}: deletion`)
 
-    const { url: baseUrl } = config.getPortalConductorConfig()
-    if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
-    }
-
     try {
-        const response = await axios.delete(
-            joinUrl(baseUrl, 'users', user.username)
-        )
+        const response = await makeRequest('DELETE', `users/${user.username}`)
         logger.info(`User deletion request successful for ${user.username}`)
-        return response.data
+        return response
     } catch (error) {
         logger.error(
             `User deletion request failed for ${user.username}:`,

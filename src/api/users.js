@@ -4,12 +4,13 @@ const { requireAdmin, isAdmin, getUser, asyncHandler } = require('./lib/auth')
 const config = require('./lib/config')
 const { generateToken } = require('./lib/hmac')
 const { emailPasswordReset } = require('./lib/email')
-const { checkPassword, encodePassword } = require('./lib/password')
+const { encodePassword } = require('./lib/password')
 const { ldapGetUser, ldapModify } = require('./workflows/native/lib.js')
 const {
     userPasswordUpdateWorkflow,
     userDeletionWorkflow,
 } = require('./workflows/native/user.js')
+const { validateLdapPassword } = require('./workflows/native/services/utils')
 const sequelize = require('sequelize')
 const models = require('./models')
 const User = models.account_user
@@ -430,25 +431,33 @@ router.post(
         if (!fields || !('password' in fields) || !('oldPassword' in fields))
             return res.status(400).send('Missing required field')
 
-        // Re-fetch user unscoped so password is present
+        // Re-fetch user unscoped for updating
         const user = await User.unscoped().findByPk(req.user.id, {
             include: ['occupation'],
         })
 
-        // Check the password
-        if (!checkPassword(user.password, fields.oldPassword))
+        // Validate old password against LDAP (source of truth)
+        const isPasswordValid = await validateLdapPassword(user.username, fields.oldPassword)
+        if (!isPasswordValid)
             return res.status(400).send('Incorrect password')
 
         // Update password in DB
         user.password = encodePassword(fields.password)
         await user.save()
 
-        res.status(200).send('success')
-
-        // Update password in LDAP (do after response as to not delay it)
+        // Update password in LDAP/portal-conductor (do before response to handle errors properly)
         logger.info(`Updating password for user ${user.username}`)
         user.password = fields.password // kludgey, but use raw password
-        await userPasswordUpdateWorkflow(user)
+        try {
+            await userPasswordUpdateWorkflow(user)
+        } catch (error) {
+            logger.error(`Portal-conductor password update failed for ${user.username}: ${error.message}`)
+            // Note: DB password was already updated, but LDAP/iRODS failed
+            // This is a partial failure state that should be reported to the user
+            return res.status(500).send('Password updated in database but failed to update in external systems. Please contact support.')
+        }
+
+        res.status(200).send('success')
     })
 )
 

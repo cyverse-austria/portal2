@@ -321,21 +321,32 @@ router.put(
         user.password = encodePassword(fields.password)
         await user.save()
 
-        res.status(200).send('success')
-
-        // Run appropriate workflow (do after response as to not delay it)
+        // Run appropriate workflow (do before response to handle errors properly)
         user.password = fields.password // kludgey, but use raw password in workflows below
 
-        if (oldPassword != '') {
-            // existing user password reset
-            await userPasswordUpdateWorkflow(user)
-        } else {
-            // new user
-            // Run user creation workflow
-            logger.info(
-                `Running user creation workflow for user ${user.username}`
-            )
-            await userCreationWorkflow(user)
+        try {
+            if (oldPassword != '') {
+                // existing user password reset
+                await userPasswordUpdateWorkflow(user)
+            } else {
+                // new user
+                // Run user creation workflow
+                logger.info(
+                    `Running user creation workflow for user ${user.username}`
+                )
+                await userCreationWorkflow(user)
+            }
+        } catch (error) {
+            logger.error(`Portal-conductor workflow failed for ${user.username}: ${error.message}`)
+            // Note: DB password was already updated, but LDAP/iRODS failed
+            // This is a partial failure state that should be reported to the user
+            return res.status(500).send('Password updated in database but failed to update in external systems. Please contact support.')
+        }
+
+        res.status(200).send('success')
+
+        // Handle default service grants for new users (do after response as this can be retried)
+        if (oldPassword == '') {
 
             // Grant access to default services
             logger.info(

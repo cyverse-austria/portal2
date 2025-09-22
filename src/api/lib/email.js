@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const config = require('./config')
 const { logger } = require('./logging')
-const { joinUrl } = require('./url')
+const { makeRequest } = require('../workflows/native/services/utils')
 const {
     UI_WORKSHOPS_URL,
     UI_REQUESTS_URL,
@@ -45,11 +45,6 @@ async function queueEmail(cfg) {
 }
 
 async function sendEmailViaConductor(cfg) {
-    const { url: baseUrl } = config.getPortalConductorConfig()
-    if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
-    }
-
     const emailRequest = {
         to: cfg.to,
         subject: cfg.subject,
@@ -70,25 +65,13 @@ async function sendEmailViaConductor(cfg) {
         throw new Error('Email must have either HTML or text body')
     }
 
-    const fetch = (await import('node-fetch')).default
-    const response = await fetch(joinUrl(baseUrl, 'emails', 'send'), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(emailRequest),
-    })
-
-    if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(
-            `Portal conductor email API error: ${response.status} ${errorText}`
-        )
+    try {
+        const result = await makeRequest('POST', 'emails/send', emailRequest)
+        logger.debug('Email sent via conductor:', result.message)
+        return result
+    } catch (error) {
+        throw new Error(`Portal conductor email API error: ${error.message}`)
     }
-
-    const result = await response.json()
-    logger.debug('Email sent via conductor:', result.message)
-    return result
 }
 
 function renderEmail({ to, bcc, subject, templateName, fields, message }) {

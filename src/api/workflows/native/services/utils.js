@@ -1,5 +1,4 @@
 const axios = require('axios')
-const bcrypt = require('bcrypt')
 const { logger } = require('../../../lib/logging')
 const config = require('../../../lib/config')
 const { joinUrl } = require('../../../lib/url')
@@ -74,56 +73,45 @@ function isRetryableError(error) {
     return status >= 500 || status === 408 || status === 429
 }
 
+
 /**
- * Decrypt a bcrypt-hashed password to plaintext
- * Note: This is needed because portal2 stores the bcrypt hash but needs
- * to send the plaintext password via Basic Auth to portal-conductor
- * @param {string} hashedPassword - The bcrypt hash
- * @param {string} plainPassword - The original plaintext password to verify
- * @returns {boolean} True if password matches the hash
+ * Validate user credentials against LDAP via portal-conductor
+ * @param {string} username - Username to validate
+ * @param {string} password - Password to validate
+ * @returns {Promise<boolean>} True if credentials are valid
  */
-function verifyBcryptPassword(hashedPassword, plainPassword) {
+async function validateLdapPassword(username, password) {
     try {
-        return bcrypt.compareSync(plainPassword, hashedPassword)
+        // Call the portal-conductor validation endpoint
+        const response = await makeRequest(
+            'POST',
+            `users/${username}/validate`,
+            {
+                password: password,
+            }
+        )
+        return response.valid === true
     } catch (error) {
-        logger.error(`Failed to verify bcrypt password: ${error.message}`)
-        return false
+        // If the error is 404 (endpoint not found) or 400 (invalid credentials), return false
+        if (error.message && (
+            error.message.includes('404') ||
+            error.message.includes('400') ||
+            error.message.includes('Invalid credentials')
+        )) {
+            return false
+        }
+        // For other errors, rethrow as they indicate system issues
+        throw error
     }
 }
 
 /**
  * Get portal-conductor authentication configuration
- * Note: The password in config is stored as a bcrypt hash, but we need to send
- * the original plaintext password via Basic Auth to portal-conductor.
- * This requires the original password to be provided via environment variable.
- * @returns {Object|null} Authentication configuration with plaintext password
+ * @returns {Object|null} Authentication configuration
  */
 function getPortalConductorAuth() {
     const { auth } = config.getPortalConductorConfig()
-    if (!auth) {
-        return null
-    }
-
-    // Get the original plaintext password from environment variable
-    const plaintextPassword = process.env.PORTAL_CONDUCTOR_PASSWORD
-    if (!plaintextPassword) {
-        throw new Error(
-            'PORTAL_CONDUCTOR_PASSWORD environment variable is required when using bcrypt-hashed password in config'
-        )
-    }
-
-    // Verify that the plaintext password matches the bcrypt hash in config
-    if (!verifyBcryptPassword(auth.password, plaintextPassword)) {
-        throw new Error(
-            'PORTAL_CONDUCTOR_PASSWORD does not match the bcrypt hash in configuration'
-        )
-    }
-
-    // Return auth config with plaintext password for Basic Auth
-    return {
-        username: auth.username,
-        password: plaintextPassword,
-    }
+    return auth || null
 }
 
 /**
@@ -399,4 +387,6 @@ module.exports = {
     validateRegistrationRequest,
     logServiceRegistration,
     logServiceRegistrationError,
+    makeRequest,
+    validateLdapPassword,
 }
