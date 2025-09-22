@@ -335,6 +335,28 @@ async function setJobLimits(username, limit) {
 }
 
 /**
+ * Get comprehensive LDAP information for a user via portal-conductor
+ * @param {string} username - Username to lookup
+ * @returns {Promise<Object>} LDAP user information
+ */
+async function getUserLdapInfo(username) {
+    return await makeRequest('GET', `ldap/users/${username}`)
+}
+
+/**
+ * Modify a user's LDAP attribute via portal-conductor
+ * @param {string} username - Username to modify
+ * @param {string} attribute - LDAP attribute name (e.g., 'mail', 'givenName', 'sn', 'cn')
+ * @param {string} value - New value for the attribute
+ * @returns {Promise<Object>} Response data
+ */
+async function modifyUserLdapAttribute(username, attribute, value) {
+    return await makeRequest('PUT', `ldap/users/${username}/attributes/${attribute}`, {
+        value,
+    })
+}
+
+/**
  * Validate that a user and service are provided for registration
  * @param {Object} user - User object
  * @param {Object} service - Service object
@@ -384,6 +406,8 @@ module.exports = {
     addToMailingList,
     removeFromMailingList,
     setJobLimits,
+    getUserLdapInfo,
+    modifyUserLdapAttribute,
     validateRegistrationRequest,
     logServiceRegistration,
     logServiceRegistrationError,

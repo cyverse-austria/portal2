@@ -5,12 +5,12 @@ const config = require('./lib/config')
 const { generateToken } = require('./lib/hmac')
 const { emailPasswordReset } = require('./lib/email')
 const { encodePassword } = require('./lib/password')
-const { ldapGetUser, ldapModify } = require('./workflows/native/lib.js')
+const { ldapModify } = require('./workflows/native/lib.js')
 const {
     userPasswordUpdateWorkflow,
     userDeletionWorkflow,
 } = require('./workflows/native/user.js')
-const { validateLdapPassword } = require('./workflows/native/services/utils')
+const { validateLdapPassword, getUserLdapInfo } = require('./workflows/native/services/utils')
 const sequelize = require('sequelize')
 const models = require('./models')
 const User = models.account_user
@@ -290,9 +290,31 @@ router.get(
     asyncHandler(async (req, res) => {
         const user = await User.findByPk(req.params.id)
         try {
-            const record = await ldapGetUser(user.username)
-            res.status(200).send(record)
+            const ldapInfo = await getUserLdapInfo(user.username)
+
+            // Format the LDAP info as a readable string for the frontend dialog
+            const formattedRecord = [
+                `Username: ${ldapInfo.username || 'N/A'}`,
+                `Full Name: ${ldapInfo.common_name || 'N/A'}`,
+                `Email: ${ldapInfo.email || 'N/A'}`,
+                `UID Number: ${ldapInfo.uid_number || 'N/A'}`,
+                `GID Number: ${ldapInfo.gid_number || 'N/A'}`,
+                `Home Directory: ${ldapInfo.home_directory || 'N/A'}`,
+                `Login Shell: ${ldapInfo.login_shell || 'N/A'}`,
+                `Department: ${ldapInfo.department || 'N/A'}`,
+                `Organization: ${ldapInfo.organization || 'N/A'}`,
+                `Title: ${ldapInfo.title || 'N/A'}`,
+                `Shadow Last Change: ${ldapInfo.shadow_last_change || 'N/A'}`,
+                `Shadow Min Days: ${ldapInfo.shadow_min || 'N/A'}`,
+                `Shadow Max Days: ${ldapInfo.shadow_max || 'N/A'}`,
+                `Shadow Warning Days: ${ldapInfo.shadow_warning || 'N/A'}`,
+                `Shadow Inactive Days: ${ldapInfo.shadow_inactive || 'N/A'}`,
+                `Object Classes: ${ldapInfo.object_classes ? ldapInfo.object_classes.join(', ') : 'N/A'}`
+            ].join('\n')
+
+            res.status(200).send(formattedRecord)
         } catch (error) {
+            logger.error(`Failed to get LDAP info for user ${user.username}:`, error)
             res.status(500).send('An error occurred')
         }
     })
