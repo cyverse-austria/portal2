@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Button,
     TextField,
@@ -24,6 +24,18 @@ const AddServiceDialog = ({
         )
     const [selected, setSelected] = useState()
 
+    // Reset dialog state when it opens or when services change
+    useEffect(() => {
+        if (open) {
+            setSelected(null)
+        }
+    }, [open])
+
+    // Reset selected value when available services change (after adding a service)
+    useEffect(() => {
+        setSelected(null)
+    }, [services])
+
     return (
         <Dialog open={open} onClose={handleClose} fullWidth>
             <DialogTitle>Add Service</DialogTitle>
@@ -40,7 +52,7 @@ const AddServiceDialog = ({
                             <MenuItem
                                 key={index}
                                 value={service.id}
-                                onClick={e => setSelected(service.id)}
+                                onClick={() => setSelected(service.id)}
                             >
                                 {service.name}
                             </MenuItem>
@@ -50,14 +62,23 @@ const AddServiceDialog = ({
                 <br />
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => setSelected(null) || handleClose()}>
+                <Button
+                    onClick={() => {
+                        setSelected(null)
+                        handleClose()
+                    }}
+                >
                     Cancel
                 </Button>
                 <Button
                     variant="contained"
                     color="primary"
                     disabled={!selected || !handleSubmit}
-                    onClick={() => setSelected(null) || handleSubmit(selected)}
+                    onClick={() => {
+                        const selectedValue = selected
+                        setSelected(null)
+                        handleSubmit(selectedValue)
+                    }}
                 >
                     Add
                 </Button>

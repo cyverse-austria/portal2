@@ -77,6 +77,8 @@ const User = ({ user, history, ldap }) => {
     const [showAddServiceDialog, setShowAddServiceDialog] = useState(false)
     const [hmac, setHMAC] = useState()
     const [deletingUser, setDeletingUser] = useState(false)
+    const [addingService, setAddingService] = useState(false)
+    const [currentUser, setCurrentUser] = useState(user)
     const [permission] = useState(
         user.is_superuser ? 'superuser' : user.is_staff ? 'staff' : 'regular'
     )
@@ -98,7 +100,7 @@ const User = ({ user, history, ldap }) => {
         try {
             setDeletingUser(true)
             setShowDeleteConfirmationDialog(false)
-            await api.deleteUser(user.id)
+            await api.deleteUser(currentUser.id)
             router.push('/administrative/users')
         } catch (error) {
             console.log(error)
@@ -108,7 +110,7 @@ const User = ({ user, history, ldap }) => {
 
     const openPasswordResetDialog = async () => {
         try {
-            const resp = await api.adminResetPassword(user.id)
+            const resp = await api.adminResetPassword(currentUser.id)
             setHMAC(resp)
             setShowPasswordResetDialog(true)
         } catch (error) {
@@ -119,7 +121,7 @@ const User = ({ user, history, ldap }) => {
 
     const changePermission = async e => {
         try {
-            const resp = await api.updatePermission(user.id, {
+            const resp = await api.updatePermission(currentUser.id, {
                 permission: e.target.value,
             })
             if (resp != 'success') setError('An error occurred')
@@ -131,12 +133,15 @@ const User = ({ user, history, ldap }) => {
 
     const addService = async serviceId => {
         try {
-            await api.createServiceUser(serviceId, user.id)
-            const newUser = await api.user(user.id)
-            setServices(newUser.services)
+            setAddingService(true)
+            await api.createServiceUser(serviceId, currentUser.id)
+            const newUser = await api.user(currentUser.id)
+            setCurrentUser(newUser)
         } catch (error) {
             console.log(error)
             setError(error.message)
+        } finally {
+            setAddingService(false)
         }
     }
 
@@ -146,16 +151,16 @@ const User = ({ user, history, ldap }) => {
                 <br />
                 <Paper elevation={3} className={classes.paper}>
                     <Typography component="div" variant="h5">
-                        {`${user.first_name} ${user.last_name} (${user.username}`}
-                        <CopyToClipboardButton text={user.username} />
+                        {`${currentUser.first_name} ${currentUser.last_name} (${currentUser.username}`}
+                        <CopyToClipboardButton text={currentUser.username} />
                         {')'}
                     </Typography>
                     <br />
                     <Typography>
-                        Joined: <DateSpan date={user.date_joined} />
+                        Joined: <DateSpan date={currentUser.date_joined} />
                     </Typography>
                     <Typography>
-                        ORCID: {user.orcid_id ? user.orcid_id : '<None>'}
+                        ORCID: {currentUser.orcid_id ? currentUser.orcid_id : '<None>'}
                     </Typography>
                     <Box flexDirection="row" display="flex" alignItems="center">
                         <Typography>Permission:</Typography>
@@ -241,7 +246,7 @@ const User = ({ user, history, ldap }) => {
                         Email
                     </Typography>
                     <List style={{ maxWidth: '30em' }}>
-                        {(user?.emails || []).map(email => (
+                        {(currentUser?.emails || []).map(email => (
                             <ListItem key={email.id}>
                                 <ListItemAvatar>
                                     <Avatar>
@@ -267,8 +272,8 @@ const User = ({ user, history, ldap }) => {
 
                 <Paper elevation={3} className={classes.paper}>
                     <MailingListForm
-                        userId={user.id}
-                        emails={user.emails}
+                        userId={currentUser.id}
+                        emails={currentUser.emails}
                         title="Mailing List Subscriptions"
                     />
                 </Paper>
@@ -284,16 +289,22 @@ const User = ({ user, history, ldap }) => {
                             <Button
                                 variant="contained"
                                 color="primary"
+                                disabled={addingService}
                                 onClick={() => setShowAddServiceDialog(true)}
                             >
                                 Add Service
                             </Button>
                         </Grid>
                     </Grid>
-                    <ServicesList services={user?.services || []} />
+                    {addingService && (
+                        <Box display="flex" justifyContent="center" my={2}>
+                            <CircularProgress />
+                        </Box>
+                    )}
+                    <ServicesList services={currentUser?.services || []} />
                     <AddServiceDialog
                         open={showAddServiceDialog}
-                        services={user?.services || []}
+                        services={currentUser?.services || []}
                         allServices={services}
                         handleClose={() => setShowAddServiceDialog(false)}
                         handleSubmit={serviceId => {
@@ -308,29 +319,29 @@ const User = ({ user, history, ldap }) => {
                         Institution / Research / Demographics
                     </Typography>
                     <br />
-                    <div>Company/Institution: {user.institution}</div>
-                    <div>Department: {user.department}</div>
+                    <div>Company/Institution: {currentUser.institution}</div>
+                    <div>Department: {currentUser.department}</div>
                     <div>
-                        Occupation: {user?.occupation?.name || 'Not specified'}
+                        Occupation: {currentUser?.occupation?.name || 'Not specified'}
                     </div>
                     <div>
                         Country:{' '}
-                        {user?.region?.country?.name || 'Not specified'}
+                        {currentUser?.region?.country?.name || 'Not specified'}
                     </div>
-                    <div>Region: {user?.region?.name || 'Not specified'}</div>
+                    <div>Region: {currentUser?.region?.name || 'Not specified'}</div>
                     <div>
                         Research Area:{' '}
-                        {user?.research_area?.name || 'Not specified'}
+                        {currentUser?.research_area?.name || 'Not specified'}
                     </div>
                     <div>
                         Funding Agency:{' '}
-                        {user?.funding_agency?.name || 'Not specified'}
+                        {currentUser?.funding_agency?.name || 'Not specified'}
                     </div>
                     <div>
-                        Gender Identity: {user?.gender?.name || 'Not specified'}
+                        Gender Identity: {currentUser?.gender?.name || 'Not specified'}
                     </div>
                     <div>
-                        Ethnicity: {user?.ethnicity?.name || 'Not specified'}
+                        Ethnicity: {currentUser?.ethnicity?.name || 'Not specified'}
                     </div>
                 </Paper>
 
@@ -341,16 +352,16 @@ const User = ({ user, history, ldap }) => {
                     <br />
                     <div>
                         How did you hear about us?{' '}
-                        {user?.aware_channel?.name || 'Not specified'}
+                        {currentUser?.aware_channel?.name || 'Not specified'}
                     </div>
                     <div>
                         Receive the CyVerse Newsletter?{' '}
-                        {user.subscribe_to_newsletter ? 'Yes' : 'No'}
+                        {currentUser.subscribe_to_newsletter ? 'Yes' : 'No'}
                     </div>
                     <div>
                         Participate in a research study about your use of
                         CyVerse applications and services?{' '}
-                        {user.participate_in_study ? 'Yes' : 'No'}
+                        {currentUser.participate_in_study ? 'Yes' : 'No'}
                     </div>
                 </Paper>
 
@@ -397,7 +408,7 @@ const User = ({ user, history, ldap }) => {
             />
             <PasswordResetDialog
                 open={showPasswordResetDialog}
-                user={user}
+                user={currentUser}
                 hmac={hmac}
                 handleClose={() => setShowPasswordResetDialog(false)}
             />

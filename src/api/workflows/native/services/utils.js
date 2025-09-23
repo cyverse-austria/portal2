@@ -19,7 +19,7 @@ const { joinUrl } = require('../../../lib/url')
 function getPortalConductorUrl() {
     const { url: baseUrl } = config.getPortalConductorConfig()
     if (!baseUrl) {
-        throw new Error('PORTAL_CONDUCTOR_URL configuration is not set')
+        throw new Error('Portal-conductor URL is not configured in portal2.json (portalConductor.url)')
     }
     logger.debug(`Portal-conductor base URL: ${baseUrl}`)
     return baseUrl
