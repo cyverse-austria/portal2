@@ -410,11 +410,18 @@ router.post(
 
                     // Special case: automatically set "institution" for backward compatibility
                     if (key == 'grid_institution_id' && fields[key]) {
-                        const institution =
-                            await models.account_institution_grid.findByPk(
-                                fields[key]
-                            )
-                        user['institution'] = institution.name
+                        // Validate that the value is numeric (valid ID)
+                        const institutionId = parseInt(fields[key])
+                        if (!isNaN(institutionId)) {
+                            const institution =
+                                await models.account_institution_grid.findByPk(
+                                    institutionId
+                                )
+                            if (institution) {
+                                user['institution'] = institution.name
+                            }
+                        }
+                        // If non-numeric, skip institution lookup (user entered custom text)
                     }
                 }
             }

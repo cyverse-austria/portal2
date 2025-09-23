@@ -75,6 +75,7 @@ const Account = () => {
         user?.institution || ''
     )
     const [institutionError, setInstitutionError] = useState()
+    const [institutionSearching, setInstitutionSearching] = useState(false)
     const [forms, setForms] = useState()
     const [inputDebounce, setInputDebounce] = useState(null)
     const [updateDebounce, setUpdateDebounce] = useState(null)
@@ -139,12 +140,14 @@ const Account = () => {
             setInstitutionKeyword(value)
             if (inputDebounce) clearTimeout(inputDebounce)
             if (value.length >= 3) {
+                setInstitutionSearching(true)
                 setInputDebounce(
                     setTimeout(async () => {
                         const institutions = await api.institutions({
                             keyword: value,
                             limit: 100,
                         })
+                        setInstitutionSearching(false)
                         if (institutions.length == 0)
                             setInstitutionError(
                                 'Not found, please try a different search term'
@@ -155,9 +158,13 @@ const Account = () => {
                         }
                     }, 500)
                 )
+            } else {
+                setInstitutionSearching(false)
             }
         }
     }
+
+
 
     React.useEffect(() => {
         setForms(
@@ -168,11 +175,13 @@ const Account = () => {
                 institutions,
                 institutionKeyword,
                 institutionError,
+                institutionSearching,
                 changeHandler,
                 inputHandler,
+                setInstitutions,
             })
         )
-    }, [user, institutions, institutionKeyword, institutionError])
+    }, [user, institutions, institutionKeyword, institutionError, institutionSearching])
 
     // Default submit handler for all forms
     const submitForm = async submission => {
@@ -341,8 +350,10 @@ const getForms = ({
     institutions,
     institutionKeyword,
     institutionError,
+    institutionSearching,
     changeHandler,
     inputHandler,
+    setInstitutions,
 }) => {
     return [
         {
@@ -450,17 +461,25 @@ const getForms = ({
             fields: [
                 {
                     id: 'grid_institution_id',
-                    name: 'Company/Institution (enter "other" if not found)',
+                    name: 'Company/Institution (select "Other" if not found)',
                     type: 'autocomplete',
                     required: true,
                     value: user.grid_institution_id,
                     inputValue: institutionKeyword,
                     options: institutions,
-                    placeholder: 'Search ...',
+                    placeholder: institutionSearching ? 'Searching...' : 'Type to search...',
                     errorText: institutionError,
-                    freeSolo: true,
+                    freeSolo: false,
                     onInputChange: inputHandler,
-                    //filterOptions: (options, _) => options // this is needed for "not found" message to be shown
+                    onKeyDown: (event) => {
+                        if (event.key === 'Enter') {
+                            event.preventDefault(); // Always prevent Enter key submission
+                        }
+                    },
+                    onBlur: () => {
+                        // Clear search results when focus is lost
+                        setInstitutions(null);
+                    },
                 },
                 {
                     id: 'department',
@@ -751,5 +770,6 @@ const AddEmailAddressDialog = ({
         </DialogActions>
     </Dialog>
 )
+
 
 export default Account
