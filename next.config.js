@@ -44,13 +44,8 @@ const publicRuntimeConfig = {
   WS_BASE_URL: getConfigValue('ui.wsBaseUrl'),
   GOOGLE_ANALYTICS_ID: getConfigValue('external.googleAnalyticsId'),
   SENTRY_DSN: getConfigValue('sentry.dsn'),
-  BCC_NEW_ACCOUNT_CONFIRMATION: getConfigValue('bcc.newAccountConfirmation'),
-  BCC_PASSWORD_CHANGE_REQUEST: getConfigValue('bcc.passwordChangeRequest'),
-  BCC_SERVICE_ACCESS_GRANTED: getConfigValue('bcc.serviceAccessGranted'),
-  BCC_WORKSHOP_ENROLLMENT_REQUEST: getConfigValue('bcc.workshopEnrollmentRequest'),
   INTERCOM_ENABLED: getConfigValue('features.intercomEnabled'),
   INTERCOM_APP_ID: getConfigValue('intercom.appId'),
-  INTERCOM_TOKEN: getConfigValue('intercom.token'),
   INTERCOM_COMPANY_ID: getConfigValue('intercom.companyId'),
   TERRAIN_URL: getConfigValue('terrain.url'),
   HONEYPOT_DIVISOR: getConfigValue('honeypot.divisor')
