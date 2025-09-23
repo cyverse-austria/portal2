@@ -337,17 +337,22 @@ router.put(
                 await userCreationWorkflow(user)
             }
         } catch (error) {
-            logger.error(`Portal-conductor workflow failed for ${user.username}: ${error.message}`)
+            logger.error(
+                `Portal-conductor workflow failed for ${user.username}: ${error.message}`
+            )
             // Note: DB password was already updated, but LDAP/iRODS failed
             // This is a partial failure state that should be reported to the user
-            return res.status(500).send('Password updated in database but failed to update in external systems. Please contact support.')
+            return res
+                .status(500)
+                .send(
+                    'Password updated in database but failed to update in external systems. Please contact support.'
+                )
         }
 
         res.status(200).send('success')
 
         // Handle default service grants for new users (do after response as this can be retried)
         if (oldPassword == '') {
-
             // Grant access to default services
             logger.info(
                 `Granting access to default services for user ${user.username}`

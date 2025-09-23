@@ -125,6 +125,10 @@ class PortalAPI {
         return await this.post(`/users/${id}/reset_password`, params)
     }
 
+    async adminPasswordReset(id, params) {
+        return await this.post(`/users/${id}/admin_password_reset`, params)
+    }
+
     async restrictedUsernames() {
         return await this.get(`/users/restricted`)
     }

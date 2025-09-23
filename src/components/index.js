@@ -31,9 +31,11 @@ import WelcomeBanner from './WelcomeBanner'
 import ConfirmationDialog from './ConfirmationDialog'
 import CopyToClipboardButton from './CopyToClipboardButton'
 import { AddServiceDialog } from './Dialogs'
+import AdminPasswordResetCard from './AdminPasswordResetCard'
 
 export {
     AddServiceDialog,
+    AdminPasswordResetCard,
     ConfirmationDialog,
     ContactsEditor,
     Conversations,

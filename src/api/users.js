@@ -9,8 +9,13 @@ const { ldapModify } = require('./workflows/native/lib.js')
 const {
     userPasswordUpdateWorkflow,
     userDeletionWorkflow,
+    userCreationWorkflow,
 } = require('./workflows/native/user.js')
-const { validateLdapPassword, getUserLdapInfo } = require('./workflows/native/services/utils')
+const {
+    validateLdapPassword,
+    getUserLdapInfo,
+    makeRequest,
+} = require('./workflows/native/services/utils')
 const sequelize = require('sequelize')
 const models = require('./models')
 const User = models.account_user
@@ -309,12 +314,19 @@ router.get(
                 `Shadow Max Days: ${ldapInfo.shadow_max || 'N/A'}`,
                 `Shadow Warning Days: ${ldapInfo.shadow_warning || 'N/A'}`,
                 `Shadow Inactive Days: ${ldapInfo.shadow_inactive || 'N/A'}`,
-                `Object Classes: ${ldapInfo.object_classes ? ldapInfo.object_classes.join(', ') : 'N/A'}`
+                `Object Classes: ${
+                    ldapInfo.object_classes
+                        ? ldapInfo.object_classes.join(', ')
+                        : 'N/A'
+                }`,
             ].join('\n')
 
             res.status(200).send(formattedRecord)
         } catch (error) {
-            logger.error(`Failed to get LDAP info for user ${user.username}:`, error)
+            logger.error(
+                `Failed to get LDAP info for user ${user.username}:`,
+                error
+            )
             res.status(500).send('An error occurred')
         }
     })
@@ -466,9 +478,11 @@ router.post(
         })
 
         // Validate old password against LDAP (source of truth)
-        const isPasswordValid = await validateLdapPassword(user.username, fields.oldPassword)
-        if (!isPasswordValid)
-            return res.status(400).send('Incorrect password')
+        const isPasswordValid = await validateLdapPassword(
+            user.username,
+            fields.oldPassword
+        )
+        if (!isPasswordValid) return res.status(400).send('Incorrect password')
 
         // Update password in DB
         user.password = encodePassword(fields.password)
@@ -480,10 +494,16 @@ router.post(
         try {
             await userPasswordUpdateWorkflow(user)
         } catch (error) {
-            logger.error(`Portal-conductor password update failed for ${user.username}: ${error.message}`)
+            logger.error(
+                `Portal-conductor password update failed for ${user.username}: ${error.message}`
+            )
             // Note: DB password was already updated, but LDAP/iRODS failed
             // This is a partial failure state that should be reported to the user
-            return res.status(500).send('Password updated in database but failed to update in external systems. Please contact support.')
+            return res
+                .status(500)
+                .send(
+                    'Password updated in database but failed to update in external systems. Please contact support.'
+                )
         }
 
         res.status(200).send('success')
@@ -528,6 +548,118 @@ router.post(
 
         // Send email after response as to not delay it
         if ('hmac' in req.body) await emailPasswordReset(emailAddress, hmac)
+    })
+)
+
+/*
+ * Admin password reset with portal-conductor integration (STAFF ONLY)
+ *
+ * Resets a user's password across all systems using portal-conductor workflow.
+ * Ensures user exists in datastore, resets password, and validates the new password.
+ */
+router.post(
+    '/:id(\\d+)/admin_password_reset',
+    requireAdmin,
+    asyncHandler(async (req, res) => {
+        const { password } = req.body
+        if (!password) {
+            return res.status(400).send('Password is required')
+        }
+
+        const user = await User.unscoped().findByPk(req.params.id, {
+            include: ['occupation'],
+        })
+        if (!user) return res.status(404).send('User not found')
+
+        logger.info(
+            `Admin password reset initiated for user ${user.username} by ${req.user.username}`
+        )
+
+        try {
+            // Step 1: Check if user exists in datastore, create if not
+            try {
+                const existsResponse = await makeRequest(
+                    'GET',
+                    `datastore/users/${user.username}/exists`
+                )
+                if (existsResponse.exists) {
+                    logger.info(
+                        `User ${user.username} already exists in datastore`
+                    )
+                } else {
+                    logger.info(
+                        `User ${user.username} not found in datastore, creating account`
+                    )
+
+                    // Generate numeric uidNumber for LDAP using user ID + offset
+                    const config = require('./lib/config')
+                    const securityConfig = config.getSecurityConfig()
+                    const uidNumberOffset =
+                        securityConfig?.uidNumberOffset || 2831
+                    const uidNumber = user.id + uidNumberOffset
+
+                    const requestBody = {
+                        first_name: user.first_name,
+                        last_name: user.last_name,
+                        email: user.email,
+                        username: user.username,
+                        user_uid: uidNumber.toString(),
+                        password: password,
+                        department: user.department,
+                        organization: user.institution,
+                        title: user.occupation?.name,
+                    }
+
+                    await makeRequest('POST', 'datastore/users', requestBody)
+                    logger.info(`User ${user.username} created in datastore`)
+                }
+            } catch (error) {
+                logger.error(
+                    `Failed to check/create user in datastore: ${error.message}`
+                )
+                throw error
+            }
+
+            // Step 2: Reset password across all systems
+            logger.info(`Resetting password for user ${user.username}`)
+            await makeRequest('POST', `users/${user.username}/password`, {
+                password: password,
+            })
+
+            // Step 3: Validate the new password works
+            logger.info(`Validating new password for user ${user.username}`)
+            const validationResponse = await makeRequest(
+                'POST',
+                `users/${user.username}/validate`,
+                {
+                    password: password,
+                }
+            )
+
+            if (!validationResponse.valid) {
+                throw new Error('Password validation failed after reset')
+            }
+
+            // Step 4: Update password in local database
+            user.password = encodePassword(password)
+            await user.save()
+
+            logger.info(
+                `Password reset completed successfully for user ${user.username}`
+            )
+            res.status(200).json({
+                success: true,
+                message: 'Password reset successfully across all systems',
+            })
+        } catch (error) {
+            logger.error(
+                `Admin password reset failed for ${user.username}: ${error.message}`
+            )
+            res.status(500).json({
+                success: false,
+                message: `Password reset failed: ${error.message}`,
+            })
+        }
     })
 )
 

@@ -36,6 +36,7 @@ import {
     ServicesList,
     AddServiceDialog,
     MailingListForm,
+    AdminPasswordResetCard,
 } from '../../../components'
 import { Mail as MailIcon } from '@mui/icons-material'
 import { useAPI } from '../../../contexts/api'
@@ -62,10 +63,9 @@ const useStyles = makeStyles()(theme => ({
     },
 }))
 
-const User = ({ user, history, ldap }) => {
+const User = ({ user, history, ldap, me }) => {
     const { classes } = useStyles()
     const router = useRouter()
-    const [me] = useUser()
     const api = useAPI()
     const [_, setError] = useError()
 
@@ -160,7 +160,8 @@ const User = ({ user, history, ldap }) => {
                         Joined: <DateSpan date={currentUser.date_joined} />
                     </Typography>
                     <Typography>
-                        ORCID: {currentUser.orcid_id ? currentUser.orcid_id : '<None>'}
+                        ORCID:{' '}
+                        {currentUser.orcid_id ? currentUser.orcid_id : '<None>'}
                     </Typography>
                     <Box flexDirection="row" display="flex" alignItems="center">
                         <Typography>Permission:</Typography>
@@ -239,6 +240,13 @@ const User = ({ user, history, ldap }) => {
                             </Typography>
                         </Box>
                     )}
+                </Paper>
+
+                <Paper elevation={3} className={classes.paper}>
+                    <AdminPasswordResetCard
+                        user={currentUser}
+                        onPasswordReset={newUser => setCurrentUser(newUser)}
+                    />
                 </Paper>
 
                 <Paper elevation={3} className={classes.paper}>
@@ -322,13 +330,16 @@ const User = ({ user, history, ldap }) => {
                     <div>Company/Institution: {currentUser.institution}</div>
                     <div>Department: {currentUser.department}</div>
                     <div>
-                        Occupation: {currentUser?.occupation?.name || 'Not specified'}
+                        Occupation:{' '}
+                        {currentUser?.occupation?.name || 'Not specified'}
                     </div>
                     <div>
                         Country:{' '}
                         {currentUser?.region?.country?.name || 'Not specified'}
                     </div>
-                    <div>Region: {currentUser?.region?.name || 'Not specified'}</div>
+                    <div>
+                        Region: {currentUser?.region?.name || 'Not specified'}
+                    </div>
                     <div>
                         Research Area:{' '}
                         {currentUser?.research_area?.name || 'Not specified'}
@@ -338,10 +349,12 @@ const User = ({ user, history, ldap }) => {
                         {currentUser?.funding_agency?.name || 'Not specified'}
                     </div>
                     <div>
-                        Gender Identity: {currentUser?.gender?.name || 'Not specified'}
+                        Gender Identity:{' '}
+                        {currentUser?.gender?.name || 'Not specified'}
                     </div>
                     <div>
-                        Ethnicity: {currentUser?.ethnicity?.name || 'Not specified'}
+                        Ethnicity:{' '}
+                        {currentUser?.ethnicity?.name || 'Not specified'}
                     </div>
                 </Paper>
 
@@ -525,6 +538,7 @@ export async function getServerSideProps({ req, query }) {
     // id can be integer or username
     const user = await req.api.user(query.id)
     const history = await req.api.userHistory(user.id)
+    const me = await req.api.user() // Get current logged-in user
     let ldap = null
     try {
         ldap = await req.api.userLDAP(user.id)
@@ -532,7 +546,7 @@ export async function getServerSideProps({ req, query }) {
         // Ignore
     }
 
-    return { props: { user, history, ldap } }
+    return { props: { user, history, ldap, me } }
 }
 
 export default User

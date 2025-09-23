@@ -164,8 +164,6 @@ const Account = () => {
         }
     }
 
-
-
     React.useEffect(() => {
         setForms(
             getForms({
@@ -181,7 +179,13 @@ const Account = () => {
                 setInstitutions,
             })
         )
-    }, [user, institutions, institutionKeyword, institutionError, institutionSearching])
+    }, [
+        user,
+        institutions,
+        institutionKeyword,
+        institutionError,
+        institutionSearching,
+    ])
 
     // Default submit handler for all forms
     const submitForm = async submission => {
@@ -467,18 +471,20 @@ const getForms = ({
                     value: user.grid_institution_id,
                     inputValue: institutionKeyword,
                     options: institutions,
-                    placeholder: institutionSearching ? 'Searching...' : 'Type to search...',
+                    placeholder: institutionSearching
+                        ? 'Searching...'
+                        : 'Type to search...',
                     errorText: institutionError,
                     freeSolo: false,
                     onInputChange: inputHandler,
-                    onKeyDown: (event) => {
+                    onKeyDown: event => {
                         if (event.key === 'Enter') {
-                            event.preventDefault(); // Always prevent Enter key submission
+                            event.preventDefault() // Always prevent Enter key submission
                         }
                     },
                     onBlur: () => {
                         // Clear search results when focus is lost
-                        setInstitutions(null);
+                        setInstitutions(null)
                     },
                 },
                 {
@@ -770,6 +776,5 @@ const AddEmailAddressDialog = ({
         </DialogActions>
     </Dialog>
 )
-
 
 export default Account

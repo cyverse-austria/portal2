@@ -55,7 +55,9 @@ function main() {
         console.log(`  }`)
         console.log(`}`)
         console.log('')
-        console.log('Remember to set the PORTAL_CONDUCTOR_PASSWORD environment variable')
+        console.log(
+            'Remember to set the PORTAL_CONDUCTOR_PASSWORD environment variable'
+        )
         console.log(`to the original password: ${password}`)
     } catch (error) {
         console.error(`Error generating hash: ${error.message}`)
@@ -69,5 +71,5 @@ if (require.main === module) {
 }
 
 module.exports = {
-    generatePasswordHash
+    generatePasswordHash,
 }

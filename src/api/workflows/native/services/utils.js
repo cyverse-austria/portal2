@@ -19,7 +19,9 @@ const { joinUrl } = require('../../../lib/url')
 function getPortalConductorUrl() {
     const { url: baseUrl } = config.getPortalConductorConfig()
     if (!baseUrl) {
-        throw new Error('Portal-conductor URL is not configured in portal2.json (portalConductor.url)')
+        throw new Error(
+            'Portal-conductor URL is not configured in portal2.json (portalConductor.url)'
+        )
     }
     logger.debug(`Portal-conductor base URL: ${baseUrl}`)
     return baseUrl
@@ -73,7 +75,6 @@ function isRetryableError(error) {
     return status >= 500 || status === 408 || status === 429
 }
 
-
 /**
  * Validate user credentials against LDAP via portal-conductor
  * @param {string} username - Username to validate
@@ -93,11 +94,12 @@ async function validateLdapPassword(username, password) {
         return response.valid === true
     } catch (error) {
         // If the error is 404 (endpoint not found) or 400 (invalid credentials), return false
-        if (error.message && (
-            error.message.includes('404') ||
-            error.message.includes('400') ||
-            error.message.includes('Invalid credentials')
-        )) {
+        if (
+            error.message &&
+            (error.message.includes('404') ||
+                error.message.includes('400') ||
+                error.message.includes('Invalid credentials'))
+        ) {
             return false
         }
         // For other errors, rethrow as they indicate system issues
@@ -351,9 +353,13 @@ async function getUserLdapInfo(username) {
  * @returns {Promise<Object>} Response data
  */
 async function modifyUserLdapAttribute(username, attribute, value) {
-    return await makeRequest('PUT', `ldap/users/${username}/attributes/${attribute}`, {
-        value,
-    })
+    return await makeRequest(
+        'PUT',
+        `ldap/users/${username}/attributes/${attribute}`,
+        {
+            value,
+        }
+    )
 }
 
 /**
