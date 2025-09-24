@@ -1,0 +1,2 @@
+[console_scripts]
+validate-schema = validate_schema:main

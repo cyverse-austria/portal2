@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+validate_schema.py
+db_schema_validator.egg-info/PKG-INFO
+db_schema_validator.egg-info/SOURCES.txt
+db_schema_validator.egg-info/dependency_links.txt
+db_schema_validator.egg-info/entry_points.txt
+db_schema_validator.egg-info/requires.txt
+db_schema_validator.egg-info/top_level.txt

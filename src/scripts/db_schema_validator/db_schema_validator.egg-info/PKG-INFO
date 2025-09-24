@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: db-schema-validator
+Version: 1.0.0
+Summary: Database schema validation tool for Portal2
+Requires-Python: >=3.8
+Requires-Dist: psycopg2-binary>=2.9.0
+Requires-Dist: argparse>=1.4.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
