@@ -146,12 +146,12 @@ app.prepare()
             next()
         })
 
-        // Save web socket handle
-        server.use((req, _, next) => {
-            const username = getUserID(req)
-            req.ws = sockets[username]
-            next()
-        })
+        // // Save web socket handle
+        // server.use((req, _, next) => {
+        //     const username = getUserID(req)
+        //     req.ws = sockets[username]
+        //     next()
+        // })
 
         // Default to landing page if not logged in
         server.get('/', keycloakClient.checkSso(), (req, res) => {
