@@ -27,20 +27,25 @@ router.put(
 
         if (!email) return res.status(400).send('Missing required field(s)')
 
-        let emailAddress = await EmailAddress.findOne({
+        const userId = parseInt(req.user.id, 10)
+        if (!userId || isNaN(userId))
+            return res.status(404).send('Invalid user')
+
+        let emailAddress = await EmailAddress.unscoped().findOne({
             where: lowerEqualTo('email', email),
         })
         if (!emailAddress) {
             emailAddress = await EmailAddress.create({
-                user_id: req.user.id,
+                user_id: userId,
                 email: email.toLowerCase(),
                 primary: false,
                 verified: false,
             })
             if (!emailAddress)
                 return res.status(500).send('Error creating email address')
-        } else if (emailAddress.user_id != req.user.id)
+        } else if (emailAddress.user_id !== userId) {
             return res.status(404).send('Email address not found')
+        }
 
         // Associate new email with existing mailing lists
         const primaryEmail = await EmailAddress.findOne({

@@ -1,40 +1,39 @@
-import React from 'react'
-import { useState } from 'react'
-import { useRouter } from 'next/router'
 import {
-    Container,
+    Delete as DeleteIcon,
+    Mail as MailIcon,
+    Person as PersonIcon,
+} from '@mui/icons-material'
+import {
     AppBar,
-    Toolbar,
-    Box,
-    Paper,
-    Typography,
-    Link,
-    Button,
-    IconButton,
-    TextField,
     Avatar,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemAvatar,
-    ListItemSecondaryAction,
+    Box,
+    Button,
+    Container,
     Dialog,
-    DialogTitle,
+    DialogActions,
     DialogContent,
     DialogContentText,
-    DialogActions,
+    DialogTitle,
+    IconButton,
+    Link,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemSecondaryAction,
+    ListItemText,
+    Paper,
+    TextField,
+    Toolbar,
+    Typography,
 } from '@mui/material'
-import {
-    Person as PersonIcon,
-    Mail as MailIcon,
-    Delete as DeleteIcon,
-} from '@mui/icons-material'
-import { Layout, UpdateForm, MailingListForm, MainLogo } from '../components'
+import { useRouter } from 'next/router'
+import React, { useState } from 'react'
 import { isEmail, isEmpty } from 'validator'
-import { useUser } from '../contexts/user'
+import { Layout, MailingListForm, MainLogo, UpdateForm } from '../components'
 import { useAPI } from '../contexts/api'
 import { useError } from '../contexts/error'
 import { useSuccess } from '../contexts/success'
+import { useUser } from '../contexts/user'
 import { sortCountries } from '../lib/misc'
 import { makeStyles } from '../styles/tss'
 const properties = require('../user-properties.json')
