@@ -20,10 +20,11 @@ if __name__ == "__main__":
     parser.add_argument('--port', type=int, default=5432, help='the database port number')
     parser.add_argument('--user', default='portal', help='the database username')
     parser.add_argument('--database', default='portal', help='the database name')
+    parser.add_argument('--password', default=None, help='the database password')
     parser.add_argument('path', nargs=1, help='path of token data')
     args = parser.parse_args()
 
-    conn = psycopg2.connect(host=args.host, port=args.port, user=args.user, dbname=args.database)
+    conn = psycopg2.connect(host=args.host, port=args.port, user=args.user, dbname=args.database, password=args.password)
 
     # Load GRID CSV file
     with open(args.path[0]) as csvfile:
