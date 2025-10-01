@@ -79,9 +79,7 @@
     "uidNumberOffset": 2831
   },
   "smtp": {
-    "from": "support@example.com",
-    "host": "localhost",
-    "port": 25
+    "from": "support@example.com"
   },
   "support": {
     "email": "support@example.com"
