@@ -76,6 +76,34 @@ async function userDeletionWorkflow(user) {
     logger.info(`Running native workflow for user ${user.username}: deletion`)
 
     try {
+        // Remove user from all mailing lists first
+        logger.info(`Removing user ${user.username} from mailing lists`)
+        for (const emailObj of user.emails) {
+            if (emailObj.mailing_lists && emailObj.mailing_lists.length > 0) {
+                for (const mailingList of emailObj.mailing_lists) {
+                    try {
+                        logger.info(
+                            `Removing ${emailObj.email} from mailing list ${mailingList.list_name}`
+                        )
+                        await makeRequest(
+                            'DELETE',
+                            `mailinglists/${mailingList.list_name}/members/${emailObj.email}`
+                        )
+                        logger.info(
+                            `Removed ${emailObj.email} from mailing list ${mailingList.list_name}`
+                        )
+                    } catch (mailingListError) {
+                        // Log but don't fail the entire deletion if mailing list removal fails
+                        logger.error(
+                            `Failed to remove ${emailObj.email} from mailing list ${mailingList.list_name}:`,
+                            mailingListError.message
+                        )
+                    }
+                }
+            }
+        }
+
+        // Delete user from LDAP and datastore
         const response = await makeRequest('DELETE', `users/${user.username}`)
         logger.info(`User deletion request successful for ${user.username}`)
         return response

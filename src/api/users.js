@@ -704,7 +704,6 @@ router.delete(
 
         //TODO remove these tables eventually (leftover from v1 and no longer used)
         await models.django_cyverse_auth_token.destroy(opts)
-        await models.django_cyverse_auth_token.destroy(opts)
         await models.django_admin_log.destroy(opts)
         await models.warden_atmosphereinternationalrequest.destroy(opts)
         await models.warden_atmospherestudentrequest.destroy(opts)
@@ -713,15 +712,14 @@ router.delete(
         await models.account_passwordreset.destroy(opts)
         await models.account_passwordresetrequest.destroy(opts)
         await models.api_userservice.destroy(opts)
-        // for (const request of await models.api_accessrequest.findAll(opts)) { // loop through logs because "onDelete: cascade" isn't working for some reason
-        //     await models.api_accessrequestlog.destroy({ where: { access_request_id: request.id } });
-        //     await request.destroy();
-        // }
         await models.api_workshoporganizer.destroy({
             where: { organizer_id: user.id },
         })
-        //await models.api_workshopenrollmentrequest.destroy(opts);
-        //await models.api_formsubmission.destroy(opts);
+
+        // Manually delete these as safety measure (cascade should handle but being explicit)
+        await models.api_workshopenrollmentrequest.destroy(opts)
+        await models.api_formsubmission.destroy(opts)
+
         await user.destroy()
 
         res.status(200).send('success')
