@@ -717,6 +717,15 @@ router.delete(
         })
 
         // Manually delete these as safety measure (cascade should handle but being explicit)
+        // Delete enrollment request logs first: api_workshopenrollmentrequestlog FK lacks ON DELETE CASCADE,
+        // causing constraint violations. Alternatives: let user.destroy() cascade handle it, or add CASCADE to DB.
+        const enrollmentRequests = await models.api_workshopenrollmentrequest.findAll(opts)
+        const enrollmentRequestIds = enrollmentRequests.map(req => req.id)
+        if (enrollmentRequestIds.length > 0) {
+            await models.api_workshopenrollmentrequestlog.destroy({
+                where: { workshop_enrollment_request_id: enrollmentRequestIds }
+            })
+        }
         await models.api_workshopenrollmentrequest.destroy(opts)
         await models.api_formsubmission.destroy(opts)
 
