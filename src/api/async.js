@@ -77,12 +77,23 @@ router.get(
         const auth = getPortalConductorAuth()
         const axiosConfig = createAxiosConfig(auth)
 
-        const response = await axios.get(`${conductorUrl}/async/analyses`, {
-            ...axiosConfig,
-            params: { status },
-        })
+        try {
+            const response = await axios.get(`${conductorUrl}/async/analyses`, {
+                ...axiosConfig,
+                params: { status },
+            })
 
-        res.json(response.data)
+            res.json(response.data)
+        } catch (error) {
+            const statusCode = error.response?.status || 'unknown'
+            const errorDetail = error.response?.data || error.message
+            logger.error(
+                `Failed to fetch analyses from portal-conductor (HTTP ${statusCode}): ${JSON.stringify(
+                    errorDetail
+                )}`
+            )
+            throw error // Re-throw to let asyncHandler handle it
+        }
     })
 )
 
@@ -98,12 +109,23 @@ router.get(
         const auth = getPortalConductorAuth()
         const axiosConfig = createAxiosConfig(auth)
 
-        const response = await axios.get(
-            `${conductorUrl}/async/analyses/${analysisId}/details`,
-            axiosConfig
-        )
+        try {
+            const response = await axios.get(
+                `${conductorUrl}/async/analyses/${analysisId}/details`,
+                axiosConfig
+            )
 
-        res.json(response.data)
+            res.json(response.data)
+        } catch (error) {
+            const statusCode = error.response?.status || 'unknown'
+            const errorDetail = error.response?.data || error.message
+            logger.error(
+                `Failed to fetch analysis details from portal-conductor (HTTP ${statusCode}): ${JSON.stringify(
+                    errorDetail
+                )}`
+            )
+            throw error // Re-throw to let asyncHandler handle it
+        }
     })
 )
 

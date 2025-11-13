@@ -4,6 +4,7 @@ import {
     Refresh as RefreshIcon,
 } from '@mui/icons-material'
 import {
+    Alert,
     Box,
     Button,
     Chip,
@@ -242,6 +243,7 @@ const AsyncJobs = () => {
     const [status, setStatus] = useState('Running')
     const [analyses, setAnalyses] = useState([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
     const statusOptions = [
         { value: '', label: 'All' },
@@ -275,9 +277,18 @@ const AsyncJobs = () => {
             const result = await api.asyncAnalyses(params)
             if (isMountedRef.current) {
                 setAnalyses(result.analyses || [])
+                setError(null) // Clear any previous errors
             }
-        } catch (error) {
-            console.error('Failed to fetch analyses:', error)
+        } catch (err) {
+            console.error('Failed to fetch analyses:', err)
+            if (isMountedRef.current) {
+                // Set user-friendly error message
+                const errorMessage =
+                    err.response?.status === 502
+                        ? 'Service temporarily unavailable. Auto-refresh will retry.'
+                        : 'Failed to fetch analyses. Auto-refresh will retry.'
+                setError(errorMessage)
+            }
         } finally {
             if (isMountedRef.current) {
                 setLoading(false)
@@ -377,6 +388,14 @@ const AsyncJobs = () => {
 
                     <br />
 
+                    {error && (
+                        <>
+                            <Alert severity="warning" style={{ marginBottom: '1em' }}>
+                                {error}
+                            </Alert>
+                        </>
+                    )}
+
                     {loading && analyses.length === 0 ? (
                         <Grid container justifyContent="center">
                             <CircularProgress />
@@ -395,13 +414,30 @@ const AsyncJobs = () => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {paginatedAnalyses.map(analysis => (
-                                            <AnalysisRow
-                                                key={analysis.analysis_id}
-                                                analysis={analysis}
-                                                api={api}
-                                            />
-                                        ))}
+                                        {analyses.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={5}
+                                                    align="center"
+                                                    style={{ padding: '2em' }}
+                                                >
+                                                    <Typography
+                                                        variant="body1"
+                                                        color="text.secondary"
+                                                    >
+                                                        No jobs found
+                                                    </Typography>
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            paginatedAnalyses.map(analysis => (
+                                                <AnalysisRow
+                                                    key={analysis.analysis_id}
+                                                    analysis={analysis}
+                                                    api={api}
+                                                />
+                                            ))
+                                        )}
                                     </TableBody>
                                     <TableFooter>
                                         <TableRow>
