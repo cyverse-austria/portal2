@@ -212,6 +212,7 @@ app.prepare()
             requireAuth,
             require('./api/mailing_lists')
         )
+        server.use('/api/async', requireAuth, require('./api/async'))
         server.use('/api/*', (_, res) =>
             res.status(404).send('Resource not found')
         )

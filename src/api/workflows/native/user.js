@@ -70,42 +70,22 @@ async function userPasswordUpdateWorkflow(user) {
 }
 
 // Based on v1 portal:/account/views/user.py:perform_destroy()
+// Now uses async deletion endpoint to avoid timeouts on large home directories
 async function userDeletionWorkflow(user) {
     if (!user || !user.emails) throw 'Missing required property'
 
-    logger.info(`Running native workflow for user ${user.username}: deletion`)
+    logger.info(`Running native workflow for user ${user.username}: async deletion`)
 
     try {
-        // Remove user from all mailing lists first
-        logger.info(`Removing user ${user.username} from mailing lists`)
-        for (const emailObj of user.emails) {
-            if (emailObj.mailing_lists && emailObj.mailing_lists.length > 0) {
-                for (const mailingList of emailObj.mailing_lists) {
-                    try {
-                        logger.info(
-                            `Removing ${emailObj.email} from mailing list ${mailingList.list_name}`
-                        )
-                        await makeRequest(
-                            'DELETE',
-                            `mailinglists/${mailingList.list_name}/members/${emailObj.email}`
-                        )
-                        logger.info(
-                            `Removed ${emailObj.email} from mailing list ${mailingList.list_name}`
-                        )
-                    } catch (mailingListError) {
-                        // Log but don't fail the entire deletion if mailing list removal fails
-                        logger.error(
-                            `Failed to remove ${emailObj.email} from mailing list ${mailingList.list_name}:`,
-                            mailingListError.message
-                        )
-                    }
-                }
-            }
-        }
-
-        // Delete user from LDAP and datastore
-        const response = await makeRequest('DELETE', `users/${user.username}`)
-        logger.info(`User deletion request successful for ${user.username}`)
+        // Delete user from LDAP and datastore (async)
+        // This endpoint will:
+        // 1. Remove user from mailing lists
+        // 2. Delete LDAP account
+        // 3. Submit async analysis to delete datastore files
+        const response = await makeRequest('DELETE', `async/users/${user.username}`)
+        logger.info(
+            `User async deletion request successful for ${user.username}. Analysis ID: ${response.analysis_id}`
+        )
         return response
     } catch (error) {
         logger.error(

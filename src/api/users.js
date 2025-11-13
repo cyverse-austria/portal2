@@ -695,43 +695,23 @@ router.delete(
         if (user.is_staff || user.is_superuser)
             return res.status(403).send('Cannot delete privileged user')
 
-        // Submit user deletion workflow to remove user from subsystems (LDAP, IRODS, etc)
-        await userDeletionWorkflow(user)
+        // Submit async user deletion workflow
+        // This submits a Formation job that handles ALL deletion operations:
+        // - Mailing lists
+        // - LDAP
+        // - iRODS datastore (slow)
+        // - Portal database
+        const deletionResult = await userDeletionWorkflow(user)
+        logger.info(
+            `User deletion submitted for ${user.username} with analysis_id: ${deletionResult.analysis_id}`
+        )
 
-        // Remove user from database
-        logger.info(`Deleting user ${user.username} id=${user.id}`)
-        const opts = { where: { user_id: user.id } }
-
-        //TODO remove these tables eventually (leftover from v1 and no longer used)
-        await models.django_cyverse_auth_token.destroy(opts)
-        await models.django_admin_log.destroy(opts)
-        await models.warden_atmosphereinternationalrequest.destroy(opts)
-        await models.warden_atmospherestudentrequest.destroy(opts)
-
-        //TODO add associations in models/index.js to cascade delete these
-        await models.account_passwordreset.destroy(opts)
-        await models.account_passwordresetrequest.destroy(opts)
-        await models.api_userservice.destroy(opts)
-        await models.api_workshoporganizer.destroy({
-            where: { organizer_id: user.id },
+        res.status(200).json({
+            success: true,
+            analysis_id: deletionResult.analysis_id,
+            status: deletionResult.status,
+            message: 'User deletion initiated. All operations (LDAP, database, datastore) are running asynchronously via Formation job.'
         })
-
-        // Manually delete these as safety measure (cascade should handle but being explicit)
-        // Delete enrollment request logs first: api_workshopenrollmentrequestlog FK lacks ON DELETE CASCADE,
-        // causing constraint violations. Alternatives: let user.destroy() cascade handle it, or add CASCADE to DB.
-        const enrollmentRequests = await models.api_workshopenrollmentrequest.findAll(opts)
-        const enrollmentRequestIds = enrollmentRequests.map(req => req.id)
-        if (enrollmentRequestIds.length > 0) {
-            await models.api_workshopenrollmentrequestlog.destroy({
-                where: { workshop_enrollment_request_id: enrollmentRequestIds }
-            })
-        }
-        await models.api_workshopenrollmentrequest.destroy(opts)
-        await models.api_formsubmission.destroy(opts)
-
-        await user.destroy()
-
-        res.status(200).send('success')
     })
 )
 

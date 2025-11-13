@@ -100,11 +100,18 @@ const User = ({ user, history, ldap, me }) => {
         try {
             setDeletingUser(true)
             setShowDeleteConfirmationDialog(false)
-            await api.deleteUser(currentUser.id)
+            const result = await api.deleteUser(currentUser.id)
+
+            // Show success message with analysis ID if available
+            if (result.analysis_id) {
+                console.log(`User deletion initiated. Analysis ID: ${result.analysis_id}`)
+            }
+
             router.push('/administrative/users')
         } catch (error) {
             console.log(error)
             setError(error.message)
+            setDeletingUser(false)
         }
     }
 
@@ -428,6 +435,7 @@ const User = ({ user, history, ldap, me }) => {
             <ConfirmationDialog
                 open={showDeleteConfirmationDialog}
                 title="Delete user"
+                message="Are you sure you want to delete this user? This will submit a background job that removes the user from mailing lists, LDAP, the portal database, and deletes all datastore files. This process may take several minutes for users with large home directories."
                 handleClose={() => setShowDeleteConfirmationDialog(false)}
                 handleSubmit={deleteUser}
             />

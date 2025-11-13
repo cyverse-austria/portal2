@@ -10,6 +10,7 @@ import {
     PersonAdd as PersonAddIcon,
     Edit as EditIcon,
     Inbox as InboxIcon,
+    Schedule as ScheduleIcon,
 } from '@mui/icons-material'
 
 import SvgLearnIcon from './svg/learnIcon'
@@ -159,6 +160,13 @@ const menuItems = [
                 icon: <EditIcon />,
                 path: '/administrative/forms',
                 description: 'View and edit forms.',
+            },
+            {
+                label: 'Async Jobs',
+                icon: <ScheduleIcon />,
+                path: '/administrative/async-jobs',
+                description:
+                    'View and monitor async job statuses from Formation batch service.',
             },
         ],
     },
