@@ -29,6 +29,7 @@ import {
     Typography,
 } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/router'
 import { Layout } from '../../components'
 import { useAPI } from '../../contexts/api'
 import { makeStyles } from '../../styles/tss'
@@ -234,13 +235,17 @@ const AnalysisRow = ({ analysis, api }) => {
 const AsyncJobs = () => {
     const { classes } = useStyles()
     const api = useAPI()
+    const router = useRouter()
     const isMountedRef = useRef(false)
     const isInitialMountRef = useRef(true)
     const statusRef = useRef('Running')
 
+    // Initialize status from query parameter or default to 'Running'
+    const initialStatus = router.query.status || 'Running'
+
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const [status, setStatus] = useState('Running')
+    const [status, setStatus] = useState(initialStatus)
     const [analyses, setAnalyses] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -264,8 +269,19 @@ const AsyncJobs = () => {
     }
 
     const handleChangeStatus = event => {
-        setStatus(event.target.value)
+        const newStatus = event.target.value
+        setStatus(newStatus)
         setPage(0)
+
+        // Update URL query parameter without reloading the page
+        router.push(
+            {
+                pathname: router.pathname,
+                query: newStatus ? { status: newStatus } : {},
+            },
+            undefined,
+            { shallow: true }
+        )
     }
 
     const fetchAnalyses = async () => {
@@ -301,6 +317,16 @@ const AsyncJobs = () => {
     const handleRefresh = () => {
         fetchAnalyses()
     }
+
+    // Sync status from URL query parameter
+    useEffect(() => {
+        if (router.isReady) {
+            const queryStatus = router.query.status || 'Running'
+            if (queryStatus !== status) {
+                setStatus(queryStatus)
+            }
+        }
+    }, [router.isReady, router.query.status]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Keep statusRef in sync with status state
     useEffect(() => {
