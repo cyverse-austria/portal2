@@ -137,7 +137,7 @@ const AnalysisRow = ({ analysis, api }) => {
                                     </Grid>
                                     <Grid item xs={12} md={6}>
                                         <Typography variant="subtitle2">
-                                            Username:
+                                            Service Account Username:
                                         </Typography>
                                         <Typography
                                             variant="body2"
@@ -234,9 +234,9 @@ const AnalysisRow = ({ analysis, api }) => {
 const AsyncJobs = () => {
     const { classes } = useStyles()
     const api = useAPI()
-    const intervalIdRef = useRef(null)
     const isMountedRef = useRef(false)
     const isInitialMountRef = useRef(true)
+    const statusRef = useRef('Running')
 
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -273,7 +273,9 @@ const AsyncJobs = () => {
 
         setLoading(true)
         try {
-            const params = status ? { status } : {}
+            // Use statusRef.current to get the latest status value
+            const currentStatus = statusRef.current
+            const params = currentStatus ? { status: currentStatus } : {}
             const result = await api.asyncAnalyses(params)
             if (isMountedRef.current) {
                 setAnalyses(result.analyses || [])
@@ -285,8 +287,8 @@ const AsyncJobs = () => {
                 // Set user-friendly error message
                 const errorMessage =
                     err.response?.status === 502
-                        ? 'Service temporarily unavailable. Auto-refresh will retry.'
-                        : 'Failed to fetch analyses. Auto-refresh will retry.'
+                        ? 'Service temporarily unavailable. Please try refreshing.'
+                        : 'Failed to fetch analyses. Please try refreshing.'
                 setError(errorMessage)
             }
         } finally {
@@ -300,24 +302,20 @@ const AsyncJobs = () => {
         fetchAnalyses()
     }
 
-    // Set up initial fetch and auto-refresh on mount only
+    // Keep statusRef in sync with status state
+    useEffect(() => {
+        statusRef.current = status
+    }, [status])
+
+    // Set up initial fetch on mount only
     useEffect(() => {
         isMountedRef.current = true
 
         // Initial fetch
         fetchAnalyses()
 
-        // Set up auto-refresh every 30 seconds
-        intervalIdRef.current = setInterval(() => {
-            fetchAnalyses()
-        }, 30000)
-
         return () => {
             isMountedRef.current = false
-            if (intervalIdRef.current) {
-                clearInterval(intervalIdRef.current)
-                intervalIdRef.current = null
-            }
         }
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -353,7 +351,30 @@ const AsyncJobs = () => {
                             </Typography>
                         </Grid>
                         <Grid item>
-                            <Grid container spacing={2} alignItems="center">
+                            <Grid
+                                container
+                                spacing={2}
+                                alignItems="center"
+                                wrap="nowrap"
+                            >
+                                <Grid item>
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        style={{ fontStyle: 'italic', whiteSpace: 'nowrap' }}
+                                    >
+                                        Click Refresh to see status changes
+                                    </Typography>
+                                </Grid>
+                                <Grid item>
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={<RefreshIcon />}
+                                        onClick={handleRefresh}
+                                    >
+                                        Refresh
+                                    </Button>
+                                </Grid>
                                 <Grid item>
                                     <FormControl style={{ minWidth: 150 }}>
                                         <InputLabel>Status</InputLabel>
@@ -372,15 +393,6 @@ const AsyncJobs = () => {
                                             ))}
                                         </Select>
                                     </FormControl>
-                                </Grid>
-                                <Grid item>
-                                    <Button
-                                        variant="outlined"
-                                        startIcon={<RefreshIcon />}
-                                        onClick={handleRefresh}
-                                    >
-                                        Refresh
-                                    </Button>
                                 </Grid>
                             </Grid>
                         </Grid>
@@ -458,13 +470,6 @@ const AsyncJobs = () => {
                                     </TableFooter>
                                 </Table>
                             </TableContainer>
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                style={{ marginTop: '1em' }}
-                            >
-                                Auto-refreshes every 30 seconds
-                            </Typography>
                         </>
                     )}
                 </Paper>
