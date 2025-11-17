@@ -111,6 +111,20 @@ router.get('/mine', getUser, (req, res) => {
     res.status(200).json(req.user)
 })
 
+// Get restricted usernames (MUST come before /:usernameOrId route)
+router.get(
+    '/restricted',
+    requireAdmin,
+    asyncHandler(async (req, res) => {
+        const usernames = await RestrictedUsername.findAll({
+            attributes: ['id', 'username'],
+            order: [['username', 'ASC']],
+        })
+
+        res.status(200).json(usernames)
+    })
+)
+
 // Get individual user (STAFF ONLY)
 router.get(
     '/:usernameOrId(\\w+)',
@@ -712,21 +726,6 @@ router.delete(
             status: deletionResult.status,
             message: 'User deletion initiated. All operations (LDAP, database, datastore) are running asynchronously via Formation job.'
         })
-    })
-)
-
-// Get restricted usernames
-router.get(
-    '/restricted',
-    requireAdmin,
-    asyncHandler(async (req, res) => {
-        const usernames = await RestrictedUsername.findAll({
-            attributes: ['id', 'username'],
-            order: [['username', 'ASC']],
-            // limit: 10
-        })
-
-        res.status(200).json(usernames)
     })
 )
 
