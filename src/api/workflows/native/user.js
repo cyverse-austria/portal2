@@ -29,7 +29,7 @@ async function userCreationWorkflow(user) {
     }
 
     try {
-        const response = await makeRequest('POST', 'users', requestBody)
+        const response = await makeRequest('POST', 'users/', requestBody)
         logger.info(`User creation request successful for ${user.username}`)
         return response
     } catch (error) {

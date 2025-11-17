@@ -8,10 +8,10 @@ function joinUrl(baseUrl, ...paths) {
     // Remove trailing slash from baseUrl if present
     const cleanBase = baseUrl.replace(/\/+$/, '')
 
-    // Clean each path segment - remove leading/trailing slashes and filter empty segments
+    // Clean each path segment - remove leading slashes only, preserve trailing slashes
     const cleanPaths = paths
         .filter(path => path && typeof path === 'string')
-        .map(path => path.replace(/^\/+|\/+$/g, ''))
+        .map(path => path.replace(/^\/+/, ''))
 
     // Join all parts with single slashes
     return cleanBase + (cleanPaths.length > 0 ? '/' + cleanPaths.join('/') : '')

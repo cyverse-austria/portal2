@@ -41,6 +41,7 @@ import {
 import { Mail as MailIcon } from '@mui/icons-material'
 import { useAPI } from '../../../contexts/api'
 import { useError, withGetServerSideError } from '../../../contexts/error'
+import { useSuccess } from '../../../contexts/success'
 import { useUser } from '../../../contexts/user'
 import { makeStyles } from '../../../styles/tss'
 
@@ -68,6 +69,7 @@ const User = ({ user, history, ldap, me }) => {
     const router = useRouter()
     const api = useAPI()
     const [_, setError] = useError()
+    const [__, setSuccess] = useSuccess()
 
     const [showDeleteConfirmationDialog, setShowDeleteConfirmationDialog] =
         useState(false)
@@ -100,12 +102,12 @@ const User = ({ user, history, ldap, me }) => {
         try {
             setDeletingUser(true)
             setShowDeleteConfirmationDialog(false)
-            const result = await api.deleteUser(currentUser.id)
+            await api.deleteUser(currentUser.id)
 
-            // Show success message with analysis ID if available
-            if (result.analysis_id) {
-                console.log(`User deletion initiated. Analysis ID: ${result.analysis_id}`)
-            }
+            // Show success message
+            setSuccess(
+                'User deletion is running in the background. Check the Async Jobs page for updates.'
+            )
 
             router.push('/administrative/users')
         } catch (error) {
