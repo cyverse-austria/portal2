@@ -41,6 +41,7 @@ import {
 import { Mail as MailIcon } from '@mui/icons-material'
 import { useAPI } from '../../../contexts/api'
 import { useError, withGetServerSideError } from '../../../contexts/error'
+import { useSuccess } from '../../../contexts/success'
 import { useUser } from '../../../contexts/user'
 import { makeStyles } from '../../../styles/tss'
 
@@ -68,6 +69,7 @@ const User = ({ user, history, ldap, me }) => {
     const router = useRouter()
     const api = useAPI()
     const [_, setError] = useError()
+    const [__, setSuccess] = useSuccess()
 
     const [showDeleteConfirmationDialog, setShowDeleteConfirmationDialog] =
         useState(false)
@@ -101,10 +103,17 @@ const User = ({ user, history, ldap, me }) => {
             setDeletingUser(true)
             setShowDeleteConfirmationDialog(false)
             await api.deleteUser(currentUser.id)
+
+            // Show success message
+            setSuccess(
+                'User deletion is running in the background. Check the Async Jobs page for updates.'
+            )
+
             router.push('/administrative/users')
         } catch (error) {
             console.log(error)
             setError(error.message)
+            setDeletingUser(false)
         }
     }
 
@@ -428,6 +437,7 @@ const User = ({ user, history, ldap, me }) => {
             <ConfirmationDialog
                 open={showDeleteConfirmationDialog}
                 title="Delete user"
+                message="Are you sure you want to delete this user? This will submit a background job that removes the user from mailing lists, LDAP, the portal database, and deletes all datastore files. This process may take several minutes for users with large home directories."
                 handleClose={() => setShowDeleteConfirmationDialog(false)}
                 handleSubmit={deleteUser}
             />

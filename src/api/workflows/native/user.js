@@ -70,14 +70,22 @@ async function userPasswordUpdateWorkflow(user) {
 }
 
 // Based on v1 portal:/account/views/user.py:perform_destroy()
+// Now uses async deletion endpoint to avoid timeouts on large home directories
 async function userDeletionWorkflow(user) {
     if (!user || !user.emails) throw 'Missing required property'
 
-    logger.info(`Running native workflow for user ${user.username}: deletion`)
+    logger.info(`Running native workflow for user ${user.username}: async deletion`)
 
     try {
-        const response = await makeRequest('DELETE', `users/${user.username}`)
-        logger.info(`User deletion request successful for ${user.username}`)
+        // Delete user from LDAP and datastore (async)
+        // This endpoint will:
+        // 1. Remove user from mailing lists
+        // 2. Delete LDAP account
+        // 3. Submit async analysis to delete datastore files
+        const response = await makeRequest('DELETE', `async/users/${user.username}`)
+        logger.info(
+            `User async deletion request successful for ${user.username}. Analysis ID: ${response.analysis_id}`
+        )
         return response
     } catch (error) {
         logger.error(

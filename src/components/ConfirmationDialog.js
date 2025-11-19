@@ -10,6 +10,7 @@ import {
 export default function ConfirmationDialog({
     open,
     title,
+    message,
     handleClose,
     handleSubmit,
 }) {
@@ -22,7 +23,9 @@ export default function ConfirmationDialog({
         >
             <DialogTitle id="form-dialog-title">{title}</DialogTitle>
             <DialogContent>
-                <DialogContentText>Are you sure?</DialogContentText>
+                <DialogContentText>
+                    {message || 'Are you sure?'}
+                </DialogContentText>
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose}>Cancel</Button>

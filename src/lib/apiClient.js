@@ -396,6 +396,18 @@ class PortalAPI {
     }
 
     /*
+     * Async operations (admin only)
+     */
+
+    async asyncAnalyses(params) {
+        return await this.get(`/async/analyses`, params)
+    }
+
+    async asyncAnalysisDetails(analysisId) {
+        return await this.get(`/async/analyses/${analysisId}/details`)
+    }
+
+    /*
      * Public endpoints (authorization not required)
      */
 

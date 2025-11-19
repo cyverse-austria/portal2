@@ -132,15 +132,21 @@ app.prepare()
         server.use(async (req, _, next) => {
             try {
                 const token = getUserToken(req)
+                // For server-side requests, we need an absolute URL
+                // Use the request's host header to build the URL
+                const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http'
+                const host = req.headers.host || 'localhost:3000'
+                const serverBaseUrl = `${protocol}://${host}/api`
+
                 req.api = new PortalAPI({
-                    baseUrl: config.getUiConfig().baseUrl + '/api',
+                    baseUrl: serverBaseUrl,
                     token: token ? token.token : null,
                 })
             } catch (error) {
                 console.error('Failed to initialize API client:', error)
                 // Always ensure req.api exists, even if initialization failed
                 req.api = new PortalAPI({
-                    baseUrl: '/api',
+                    baseUrl: 'http://localhost:3000/api',
                     token: null,
                 })
             }
@@ -212,6 +218,7 @@ app.prepare()
             requireAuth,
             require('./api/mailing_lists')
         )
+        server.use('/api/async', requireAuth, require('./api/async'))
         server.use('/api/*', (_, res) =>
             res.status(404).send('Resource not found')
         )

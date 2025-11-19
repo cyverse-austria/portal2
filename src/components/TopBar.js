@@ -60,10 +60,10 @@ const BreadcrumbsMenu = ({ parts, title }) => {
 const TopBar = props => {
     const { classes } = useStyles()
     const menuItem = menuItems.find(item => item.label === props.title)
+    const router = useRouter()
 
-    const parts = useRouter()
-        .asPath.split('/')
-        .filter(s => s)
+    // Use pathname instead of asPath to exclude query parameters from breadcrumbs
+    const parts = router.pathname.split('/').filter(s => s)
     const backUrl = '/' + parts.slice(0, -1).join('/')
 
     return (
