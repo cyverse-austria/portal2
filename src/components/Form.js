@@ -149,11 +149,11 @@ const AutoSave = ({ debounceMs }) => {
     }, [debouncedSubmit])
 
     return (
-        <></>
         // <div style={!!formik.isSubmitting ? null : {visibility: 'hidden'}}>
         //   <CircularProgressWithLabel value='Saving' />
         // </div>
-    )
+        <></>
+    );
 }
 
 const UpdateForm = ({
@@ -535,7 +535,7 @@ const FormField = props => {
                 {...commonProps}
             />
         </>
-    )
+    );
 }
 
 const FormControls = ({

@@ -48,7 +48,7 @@ const Form = ({ form, fields }) => (
     <Section title="Form" subtitle={form.name}>
         {fields.map((field, index) => (
             // <Typography>{field.name}: {field.api_formfieldsubmission.value_text}</Typography>
-            <FormField key={index} {...field}></FormField>
+            (<FormField key={index} {...field}></FormField>)
         ))}
     </Section>
 )
@@ -82,7 +82,7 @@ const FormField = props => {
             helperText={props.description}
             defaultValue={props.value}
         ></TextField>
-    )
+    );
 }
 
 export async function getServerSideProps({ req, query }) {
