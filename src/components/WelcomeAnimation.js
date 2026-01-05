@@ -1,10 +1,10 @@
-import React, { useEffect, createRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 // import { makeStyles } from '../styles/tss'
 import animation from '../animations/scientist.json'
 
 import styles from '../../src/styles/animation.module.css'
 const Animation = () => {
-    let animationContainer = createRef()
+    let animationContainer = useRef()
 
     useEffect(() => {
         // Dynamic import to avoid SSR issues

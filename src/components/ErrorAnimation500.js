@@ -1,5 +1,5 @@
-import React, { useEffect, createRef } from 'react'
 import { styled } from '@mui/material/styles'
+import React, { useEffect, useRef } from 'react'
 import animation from '../animations/error500.json'
 
 const AnimationBox = styled('div')(({ theme }) => ({
@@ -9,7 +9,7 @@ const AnimationBox = styled('div')(({ theme }) => ({
 }))
 
 const Animation = () => {
-    let animationContainer = createRef()
+    let animationContainer = useRef()
 
     useEffect(() => {
         // Dynamic import to avoid SSR issues

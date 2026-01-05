@@ -1,6 +1,6 @@
-import React, { useEffect, createRef } from 'react'
-import { makeStyles } from '../styles/tss'
+import React, { useEffect, useRef } from 'react'
 import animation from '../animations/erroranimation.json'
+import { makeStyles } from '../styles/tss'
 
 const useStyles = makeStyles()(theme => ({
     animationBox: {
@@ -11,7 +11,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const Animation = () => {
-    let animationContainer = createRef()
+    let animationContainer = useRef()
 
     const { classes } = useStyles()
 
