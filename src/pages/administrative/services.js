@@ -46,11 +46,7 @@ const ServicesTable = ({ services }) => (
                 {services.map((service, index) => (
                     <TableRow key={index} hover style={{ cursor: 'pointer' }}>
                         <TableCell>
-                            <Link
-                                href={`/services/${service.id}`}
-                                passHref
-                                style={{ textDecoration: 'none' }}
-                            >
+                            <Link href={`/services/${service.id}`} style={{ textDecoration: 'none' }}>
                                 <div>
                                     <b>{service.name}</b>
                                 </div>

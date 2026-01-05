@@ -40,7 +40,7 @@ const NavButton = props => {
 
     return (
         <div>
-            <Link href={props.path} passHref>
+            <Link href={props.path}>
                 <ListItemButton
                     component="a"
                     className={`${classes.listItem} ${
@@ -63,7 +63,7 @@ const NavButton = props => {
                 </ListItemButton>
             </Link>
         </div>
-    )
+    );
 }
 
 export default function SideBar(props) {

@@ -146,11 +146,7 @@ const RequestTable = ({
             </TableHead>
             <TableBody>
                 {rows.map(request => (
-                    <Link
-                        key={request.id}
-                        href={`/administrative/requests/${request.id}`}
-                        passHref
-                    >
+                    <Link key={request.id} href={`/administrative/requests/${request.id}`}>
                         <TableRow
                             hover
                             style={{ cursor: 'pointer' }}

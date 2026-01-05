@@ -129,11 +129,7 @@ const FormSubmissionTable = ({
             </TableHead>
             <TableBody>
                 {rows.map(submission => (
-                    <Link
-                        key={submission.id}
-                        href={`/administrative/submissions/${submission.id}`}
-                        passHref
-                    >
+                    <Link key={submission.id} href={`/administrative/submissions/${submission.id}`}>
                         <TableRow
                             hover
                             style={{ cursor: 'pointer' }}

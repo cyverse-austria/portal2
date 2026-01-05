@@ -95,11 +95,7 @@ const FormTable = props => (
         <Table>
             <TableBody>
                 {props.forms.map(form => (
-                    <Link
-                        key={form.id}
-                        href={`/administrative/forms/${form.id}`}
-                        passHref
-                    >
+                    <Link key={form.id} href={`/administrative/forms/${form.id}`}>
                         <TableRow
                             hover
                             style={{ cursor: 'pointer' }}
