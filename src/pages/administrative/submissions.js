@@ -129,27 +129,28 @@ const FormSubmissionTable = ({
             </TableHead>
             <TableBody>
                 {rows.map(submission => (
-                    <Link
+                    <TableRow
                         key={submission.id}
+                        hover
+                        component={Link}
                         href={`/administrative/submissions/${submission.id}`}
+                        sx={{
+                            cursor: 'pointer',
+                            textDecoration: 'none',
+                            color: 'inherit',
+                        }}
                     >
-                        <TableRow
-                            hover
-                            style={{ cursor: 'pointer' }}
-                            component="a"
-                        >
-                            <TableCell>{submission.form.name}</TableCell>
-                            <TableCell>{submission.user.username}</TableCell>
-                            <TableCell>{submission.user.email}</TableCell>
-                            <TableCell>
-                                {submission?.user?.region?.country?.name ||
-                                    'Not specified'}
-                            </TableCell>
-                            <TableCell>
-                                <DateSpan date={submission.updated_at} />
-                            </TableCell>
-                        </TableRow>
-                    </Link>
+                        <TableCell>{submission.form.name}</TableCell>
+                        <TableCell>{submission.user.username}</TableCell>
+                        <TableCell>{submission.user.email}</TableCell>
+                        <TableCell>
+                            {submission?.user?.region?.country?.name ||
+                                'Not specified'}
+                        </TableCell>
+                        <TableCell>
+                            <DateSpan date={submission.updated_at} />
+                        </TableCell>
+                    </TableRow>
                 ))}
             </TableBody>
             <TableFooter>
