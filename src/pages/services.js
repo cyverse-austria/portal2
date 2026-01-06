@@ -20,7 +20,6 @@ import { useUser } from '../contexts/user'
 const inlineIcons = require('../inline_icons.json')
 
 const Services = props => {
-    console.log(props)
     const [user] = useUser()
     const services = props.services || []
 
