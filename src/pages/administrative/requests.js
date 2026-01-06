@@ -146,28 +146,29 @@ const RequestTable = ({
             </TableHead>
             <TableBody>
                 {rows.map(request => (
-                    <Link
+                    <TableRow
                         key={request.id}
+                        hover
+                        component={Link}
                         href={`/administrative/requests/${request.id}`}
+                        sx={{
+                            cursor: 'pointer',
+                            textDecoration: 'none',
+                            color: 'inherit',
+                        }}
                     >
-                        <TableRow
-                            hover
-                            style={{ cursor: 'pointer' }}
-                            component="a"
-                        >
-                            <TableCell>{request.service.name}</TableCell>
-                            <TableCell>{request.user.username}</TableCell>
-                            <TableCell>{request.user.email}</TableCell>
-                            <TableCell>
-                                {request?.user?.region?.country?.name ||
-                                    'Not specified'}
-                            </TableCell>
-                            <TableCell>
-                                <DateSpan date={request.updated_at} />
-                            </TableCell>
-                            <TableCell>{request.status}</TableCell>
-                        </TableRow>
-                    </Link>
+                        <TableCell>{request.service.name}</TableCell>
+                        <TableCell>{request.user.username}</TableCell>
+                        <TableCell>{request.user.email}</TableCell>
+                        <TableCell>
+                            {request?.user?.region?.country?.name ||
+                                'Not specified'}
+                        </TableCell>
+                        <TableCell>
+                            <DateSpan date={request.updated_at} />
+                        </TableCell>
+                        <TableCell>{request.status}</TableCell>
+                    </TableRow>
                 ))}
             </TableBody>
             <TableFooter>
