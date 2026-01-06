@@ -63,7 +63,7 @@ const NavButton = props => {
                 </ListItemButton>
             </Link>
         </div>
-    );
+    )
 }
 
 export default function SideBar(props) {

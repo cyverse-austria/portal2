@@ -169,7 +169,8 @@ const UserTable = ({
                                         color: 'inherit',
                                         display: 'flex',
                                         width: '100%',
-                                    }}>
+                                    }}
+                                >
                                     <Grid container>
                                         <Grid item xs={1}>
                                             {user.first_name} {user.last_name}
@@ -215,7 +216,7 @@ const UserTable = ({
                                 </Link>
                             </TableCell>
                         </TableRow>
-                    );
+                    )
                 })}
             </TableBody>
             <TableFooter>

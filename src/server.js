@@ -134,7 +134,10 @@ app.prepare()
                 const token = getUserToken(req)
                 // For server-side requests, we need an absolute URL
                 // Use the request's host header to build the URL
-                const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http'
+                const protocol =
+                    req.secure || req.headers['x-forwarded-proto'] === 'https'
+                        ? 'https'
+                        : 'http'
                 const host = req.headers.host || 'localhost:3000'
                 const serverBaseUrl = `${protocol}://${host}/api`
 

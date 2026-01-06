@@ -387,7 +387,10 @@ const AsyncJobs = () => {
                                     <Typography
                                         variant="body2"
                                         color="text.secondary"
-                                        style={{ fontStyle: 'italic', whiteSpace: 'nowrap' }}
+                                        style={{
+                                            fontStyle: 'italic',
+                                            whiteSpace: 'nowrap',
+                                        }}
                                     >
                                         Click Refresh to see status changes
                                     </Typography>
@@ -428,7 +431,10 @@ const AsyncJobs = () => {
 
                     {error && (
                         <>
-                            <Alert severity="warning" style={{ marginBottom: '1em' }}>
+                            <Alert
+                                severity="warning"
+                                style={{ marginBottom: '1em' }}
+                            >
                                 {error}
                             </Alert>
                         </>

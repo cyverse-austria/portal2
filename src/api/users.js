@@ -724,7 +724,8 @@ router.delete(
             success: true,
             analysis_id: deletionResult.analysis_id,
             status: deletionResult.status,
-            message: 'User deletion initiated. All operations (LDAP, database, datastore) are running asynchronously via Formation job.'
+            message:
+                'User deletion initiated. All operations (LDAP, database, datastore) are running asynchronously via Formation job.',
         })
     })
 )

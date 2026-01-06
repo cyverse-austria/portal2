@@ -1,69 +1,68 @@
-import React from 'react'
-import { useRouter } from 'next/router'
-import { useState, useEffect, useRef } from 'react'
-import getConfig from 'next/config'
-import Markdown from 'markdown-to-jsx'
 import {
-    Container,
-    Paper,
-    Grid,
-    Box,
-    Tabs,
-    Tab,
-    Typography,
-    Tooltip,
-    Button,
-    IconButton,
-    Link,
-    TextField,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemAvatar,
+    Delete as DeleteIcon,
+    KeyboardArrowDown as KeyboardArrowDownIcon,
+    KeyboardArrowUp as KeyboardArrowUpIcon,
+    Person as PersonIcon,
+} from '@mui/icons-material'
+import {
     Avatar,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-    TableContainer,
-    Table,
-    TableHead,
-    TableBody,
-    TableRow,
-    TableCell,
-    Collapse,
+    Box,
+    Button,
     Chip,
     CircularProgress,
+    Collapse,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    Grid,
+    IconButton,
+    Link,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    Paper,
+    Tab,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tabs,
+    TextField,
+    Tooltip,
+    Typography,
 } from '@mui/material'
-import {
-    Person as PersonIcon,
-    Delete as DeleteIcon,
-    KeyboardArrowUp as KeyboardArrowUpIcon,
-    KeyboardArrowDown as KeyboardArrowDownIcon,
-} from '@mui/icons-material'
 import Autocomplete from '@mui/material/Autocomplete'
-import { makeStyles } from '../../styles/tss'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import {
-    LocalizationProvider,
     DatePicker,
     DateTimePicker,
+    LocalizationProvider,
 } from '@mui/x-date-pickers'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import Markdown from 'markdown-to-jsx/react'
+import getConfig from 'next/config'
+import { useRouter } from 'next/router'
+import React, { useEffect, useRef, useState } from 'react'
 import {
-    Layout,
+    AddServiceDialog,
+    ContactsEditor,
     DateRange,
     DateSpan,
+    FormDialog,
+    Layout,
+    ServicesList,
     TabPanel,
     UpdateForm,
-    FormDialog,
-    ContactsEditor,
-    ServicesList,
-    AddServiceDialog,
 } from '../../components'
 import { useAPI } from '../../contexts/api'
 import { useError } from '../../contexts/error'
 import { useUser } from '../../contexts/user'
+import { makeStyles } from '../../styles/tss'
 const {
     WS_WORKSHOP_ENROLLMENT_REQUEST_STATUS_UPDATE,
 } = require('../../constants/client')

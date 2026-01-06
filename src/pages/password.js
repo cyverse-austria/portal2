@@ -196,7 +196,7 @@ const Right = props => {
                 </Box>
             )}
         </div>
-    );
+    )
 }
 
 export async function getServerSideProps(context) {

@@ -107,7 +107,8 @@ const WorkshopTable = ({ workshops }) => (
                                 style={{
                                     textDecoration: 'none',
                                     color: 'inherit',
-                                }}>
+                                }}
+                            >
                                 <div>
                                     <div>
                                         <b>{workshop.title}</b>

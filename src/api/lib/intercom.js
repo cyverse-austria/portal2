@@ -7,9 +7,9 @@
  *
  */
 
-const Intercom = require('intercom-client')
-const { logger } = require('./logging')
-const config = require('./config')
+import { IntercomClient } from "intercom-client"
+import config from './config.js'
+import { logger } from './logging.js'
 
 // Initialize configuration
 config.init()
@@ -18,7 +18,7 @@ const featuresConfig = config.getFeatures()
 
 const intercom =
     featuresConfig.intercomEnabled && intercomConfig.token
-        ? new Intercom.Client({ token: intercomConfig.token })
+        ? new IntercomClient({ token: intercomConfig.token })
         : null // Intercom disabled
 
 if (!intercom) {
@@ -73,9 +73,8 @@ async function startConversation(user, body) {
     // Create user-initiated message (which will result in creation of a new conversation)
     const message = await intercom.messages.create({
         from: {
-            type: 'user',
-            // "email": user.email, // mdb replaced 12/8/20 -- with user_id due to error "Multiple existing users match this email address - must be more specific using user_id"
-            id: intercomUser.id,
+          type: 'user',
+          user_id: intercomUser.id,
         },
         body,
     })
@@ -165,11 +164,6 @@ async function replyToConversation(conversationId, message) {
     })
 }
 
-module.exports = {
-    getUser,
-    getConversation,
-    startConversation,
-    addNoteToConversation,
-    replyToConversation,
-    assignConversation,
+export {
+  addNoteToConversation, assignConversation, getConversation, getUser, replyToConversation, startConversation
 }

@@ -74,7 +74,9 @@ async function userPasswordUpdateWorkflow(user) {
 async function userDeletionWorkflow(user) {
     if (!user || !user.emails) throw 'Missing required property'
 
-    logger.info(`Running native workflow for user ${user.username}: async deletion`)
+    logger.info(
+        `Running native workflow for user ${user.username}: async deletion`
+    )
 
     try {
         // Delete user from LDAP and datastore (async)
@@ -82,7 +84,10 @@ async function userDeletionWorkflow(user) {
         // 1. Remove user from mailing lists
         // 2. Delete LDAP account
         // 3. Submit async analysis to delete datastore files
-        const response = await makeRequest('DELETE', `async/users/${user.username}`)
+        const response = await makeRequest(
+            'DELETE',
+            `async/users/${user.username}`
+        )
         logger.info(
             `User async deletion request successful for ${user.username}. Analysis ID: ${response.analysis_id}`
         )

@@ -153,7 +153,7 @@ const AutoSave = ({ debounceMs }) => {
         //   <CircularProgressWithLabel value='Saving' />
         // </div>
         <></>
-    );
+    )
 }
 
 const UpdateForm = ({
@@ -535,7 +535,7 @@ const FormField = props => {
                 {...commonProps}
             />
         </>
-    );
+    )
 }
 
 const FormControls = ({

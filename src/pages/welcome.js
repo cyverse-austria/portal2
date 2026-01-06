@@ -193,7 +193,7 @@ const Right = props => {
                 </Button>
             </Box>
         </div>
-    );
+    )
 }
 
 const ForgotPassword = ({ startTimeHMAC, cancelHandler }) => {
@@ -319,7 +319,7 @@ const ForgotPassword = ({ startTimeHMAC, cancelHandler }) => {
             <br />
             {backButton}
         </Box>
-    );
+    )
 }
 
 const SignUp = ({ startTimeHMAC, firstNameId, lastNameId }) => {
