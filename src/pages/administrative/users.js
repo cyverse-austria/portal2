@@ -159,61 +159,35 @@ const UserTable = ({
                         <TableRow
                             key={index}
                             hover
-                            style={{ cursor: 'pointer' }}
+                            component={Link}
+                            href={`/administrative/users/${user.id}`}
+                            sx={{
+                                cursor: 'pointer',
+                                textDecoration: 'none',
+                                color: 'inherit',
+                            }}
                         >
-                            <TableCell colSpan={7}>
-                                <Link
-                                    href={`/administrative/users/${user.id}`}
-                                    style={{
-                                        textDecoration: 'none',
-                                        color: 'inherit',
-                                        display: 'flex',
-                                        width: '100%',
-                                    }}
-                                >
-                                    <Grid container>
-                                        <Grid item xs={1}>
-                                            {user.first_name} {user.last_name}
-                                        </Grid>
-                                        <Grid
-                                            item
-                                            xs={2}
-                                            style={{ whiteSpace: 'nowrap' }}
-                                        >
-                                            {user.username}
-                                            <CopyToClipboardButton
-                                                text={user.username}
-                                            />
-                                        </Grid>
-                                        <Grid
-                                            item
-                                            xs={2}
-                                            style={{ whiteSpace: 'nowrap' }}
-                                        >
-                                            {parts[0]}
-                                            <wbr />@{parts[1]}
-                                            <CopyToClipboardButton
-                                                text={user.email}
-                                            />
-                                        </Grid>
-                                        <Grid item xs={2}>
-                                            {user.institution}
-                                        </Grid>
-                                        <Grid item xs={2}>
-                                            {user?.occupation?.name ||
-                                                'Not specified'}
-                                        </Grid>
-                                        <Grid item xs={1}>
-                                            {user?.region?.name ||
-                                                'Not specified'}
-                                        </Grid>
-                                        <Grid item xs={2}>
-                                            {user?.region?.country?.name ||
-                                                'Not specified'}
-                                        </Grid>
-                                        {/* <Grid item xs={1} style={{whiteSpace:'nowrap'}}>{(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear()}</Grid> */}
-                                    </Grid>
-                                </Link>
+                            <TableCell>
+                                {user.first_name} {user.last_name}
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                {user.username}
+                                <CopyToClipboardButton text={user.username} />
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                {parts[0]}
+                                <wbr />@{parts[1]}
+                                <CopyToClipboardButton text={user.email} />
+                            </TableCell>
+                            <TableCell>{user.institution}</TableCell>
+                            <TableCell>
+                                {user?.occupation?.name || 'Not specified'}
+                            </TableCell>
+                            <TableCell>
+                                {user?.region?.name || 'Not specified'}
+                            </TableCell>
+                            <TableCell>
+                                {user?.region?.country?.name || 'Not specified'}
                             </TableCell>
                         </TableRow>
                     )

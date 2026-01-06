@@ -624,5 +624,11 @@ const FormDialog = ({ title, open, fields, handleClose, handleSubmit }) => {
 
 export {
     FormControls,
-    FormDialog, FormField, FormStepper, honeypotId, UpdateForm, validateField, Wizard
+    FormDialog,
+    FormField,
+    FormStepper,
+    honeypotId,
+    UpdateForm,
+    validateField,
+    Wizard,
 }
