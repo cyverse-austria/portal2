@@ -1,10 +1,10 @@
+import { Box, Container, Paper, Typography } from '@mui/material'
+import Markdown from 'markdown-to-jsx/react'
 import React from 'react'
-import Markdown from 'markdown-to-jsx'
-import { makeStyles } from '../../styles/tss'
-import { Container, Box, Paper, Typography } from '@mui/material'
 import { Layout, Wizard } from '../../components'
 import { useAPI } from '../../contexts/api'
-import { useError, withGetServerSideError } from '../../contexts/error'
+import { useError } from '../../contexts/error'
+import { makeStyles } from '../../styles/tss'
 
 const useStyles = makeStyles()(theme => ({
     formContainer: {

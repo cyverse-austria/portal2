@@ -1,22 +1,22 @@
-import { useState } from 'react'
-import cookie from 'cookie'
 import {
-    Link,
-    Grid,
-    Button,
-    IconButton,
-    Divider,
+    HelpOutlineOutlined as HelpIcon,
+    Launch as LaunchIcon,
+} from '@mui/icons-material'
+import {
     Box,
+    Button,
+    Divider,
+    Grid,
+    IconButton,
+    Link,
     Typography,
 } from '@mui/material'
-import {
-    Launch as LaunchIcon,
-    HelpOutlineOutlined as HelpIcon,
-} from '@mui/icons-material'
+import { parseCookie } from 'cookie'
+import { useState } from 'react'
 import { Layout, SummaryCard, WelcomeBanner } from '../components'
-import { useUser } from '../contexts/user'
-import { WELCOME_BANNER_COOKIE } from '../constants/client'
 import DataLimitAnnouncement from '../components/DataLimitAnnouncement'
+import { WELCOME_BANNER_COOKIE } from '../constants/client'
+import { useUser } from '../contexts/user'
 const inlineIcons = require('../inline_icons.json')
 
 const Services = props => {
@@ -183,13 +183,13 @@ export async function getServerSideProps({ req }) {
             return {
                 props: {
                     services: [],
-                    cookies: cookie.parse(req.headers.cookie || ''),
+                    cookies: parseCookie(req.headers.cookie || ''),
                 },
             }
         }
 
         const services = await req.api.services()
-        const cookies = cookie.parse(req.headers.cookie || '')
+        const cookies = parseCookie(req.headers.cookie || '')
 
         // Handle case where API returns undefined or null
         if (services === undefined || services === null) {
@@ -237,7 +237,7 @@ export async function getServerSideProps({ req }) {
         return {
             props: {
                 services: [],
-                cookies: cookie.parse(req.headers.cookie || ''),
+                cookies: parseCookie(req.headers.cookie || ''),
             },
         }
     }

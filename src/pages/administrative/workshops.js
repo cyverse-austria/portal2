@@ -104,7 +104,6 @@ const WorkshopTable = ({ workshops }) => (
                         <TableCell>
                             <Link
                                 href={`/workshops/${workshop.id}`}
-                                passHref
                                 style={{
                                     textDecoration: 'none',
                                     color: 'inherit',

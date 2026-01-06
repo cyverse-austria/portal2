@@ -98,7 +98,6 @@ const FormTable = props => (
                     <Link
                         key={form.id}
                         href={`/administrative/forms/${form.id}`}
-                        passHref
                     >
                         <TableRow
                             hover

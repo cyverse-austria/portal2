@@ -48,7 +48,6 @@ const ServicesTable = ({ services }) => (
                         <TableCell>
                             <Link
                                 href={`/services/${service.id}`}
-                                passHref
                                 style={{ textDecoration: 'none' }}
                             >
                                 <div>

@@ -1,15 +1,15 @@
-import React from 'react'
-import Markdown from 'markdown-to-jsx'
+import { Person as PersonIcon } from '@mui/icons-material'
 import {
+    Avatar,
     List,
     ListItem,
-    ListItemText,
     ListItemAvatar,
-    Avatar,
+    ListItemText,
 } from '@mui/material'
+import Markdown from 'markdown-to-jsx/react'
+import React from 'react'
 import { makeStyles } from '../styles/tss'
 import { DateSpan } from './DateRange'
-import { Person as PersonIcon } from '@mui/icons-material'
 
 const useStyles = makeStyles()(theme => ({
     box: {
