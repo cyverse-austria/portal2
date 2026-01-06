@@ -1,38 +1,37 @@
-import React from 'react'
-import { useState, useEffect } from 'react'
-import getConfig from 'next/config'
 import {
-    Grid,
     Box,
     Button,
-    Stepper,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControlLabel,
+    Grid,
+    LinearProgress,
+    MenuItem,
     Step,
     StepLabel,
-    MenuItem,
-    TextField,
+    Stepper,
     Switch,
-    FormControlLabel,
+    TextField,
     Typography,
-    CircularProgress,
-    LinearProgress,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
 } from '@mui/material'
 import Autocomplete from '@mui/material/Autocomplete'
-import { makeStyles } from '../styles/tss'
-import { useFormikContext, Formik, Form, Field } from 'formik'
+import { Field, Form, Formik, useFormikContext } from 'formik'
 import debounce from 'just-debounce-it'
+import getConfig from 'next/config'
+import React, { useEffect, useState } from 'react'
 import {
-    isEmail,
-    isNumeric,
     isAlphanumeric,
-    isLowercase,
     isDate,
+    isEmail,
     isEmpty,
+    isLowercase,
+    isNumeric,
 } from 'validator'
 import { validatePassword } from '../lib/misc'
+import { makeStyles } from '../styles/tss'
 import FormikCheckboxWithLabel from './FormikCheckboxWithLabel'
 
 const useStyles = makeStyles()(theme => ({
@@ -394,7 +393,7 @@ const FormField = props => {
                 id={props.id.toString()}
                 name={props.id.toString()}
                 type="checkbox"
-                component={CheckboxWithLabel}
+                component={FormikCheckboxWithLabel}
                 color="primary"
                 defaultValue={!!props.value}
                 onChange={props.onChange}
@@ -624,12 +623,6 @@ const FormDialog = ({ title, open, fields, handleClose, handleSubmit }) => {
 }
 
 export {
-    UpdateForm,
-    Wizard,
-    FormStepper,
-    FormField,
     FormControls,
-    FormDialog,
-    validateField,
-    honeypotId,
+    FormDialog, FormField, FormStepper, honeypotId, UpdateForm, validateField, Wizard
 }

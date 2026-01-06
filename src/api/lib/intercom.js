@@ -7,7 +7,7 @@
  *
  */
 
-import { IntercomClient } from "intercom-client"
+import { IntercomClient } from 'intercom-client'
 import config from './config.js'
 import { logger } from './logging.js'
 
@@ -73,8 +73,8 @@ async function startConversation(user, body) {
     // Create user-initiated message (which will result in creation of a new conversation)
     const message = await intercom.messages.create({
         from: {
-          type: 'user',
-          user_id: intercomUser.id,
+            type: 'user',
+            user_id: intercomUser.id,
         },
         body,
     })
@@ -165,5 +165,10 @@ async function replyToConversation(conversationId, message) {
 }
 
 export {
-  addNoteToConversation, assignConversation, getConversation, getUser, replyToConversation, startConversation
+    addNoteToConversation,
+    assignConversation,
+    getConversation,
+    getUser,
+    replyToConversation,
+    startConversation,
 }
