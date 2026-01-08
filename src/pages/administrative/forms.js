@@ -1,20 +1,19 @@
-import React from 'react'
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
 import {
-    Container,
-    Paper,
-    Grid,
     Button,
-    Typography,
-    TableContainer,
+    Container,
+    Grid,
+    Paper,
     Table,
     TableBody,
-    TableRow,
     TableCell,
+    TableContainer,
+    TableRow,
+    Typography,
 } from '@mui/material'
-import { Layout, FormDialog } from '../../components'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import React, { useState } from 'react'
+import { FormDialog, Layout } from '../../components'
 import { useAPI } from '../../contexts/api'
 import { withGetServerSideError } from '../../contexts/error'
 import { makeStyles } from '../../styles/tss'
@@ -26,7 +25,7 @@ const useStyles = makeStyles()(theme => ({
     },
 }))
 
-const Forms = props => {
+function Forms(props) {
     const { classes } = useStyles()
     const router = useRouter()
     const api = useAPI()
@@ -90,28 +89,33 @@ const Forms = props => {
     )
 }
 
-const FormTable = props => (
-    <TableContainer component={Paper}>
-        <Table>
-            <TableBody>
-                {props.forms.map(form => (
-                    <Link
-                        key={form.id}
-                        href={`/administrative/forms/${form.id}`}
-                    >
+function FormTable(props) {
+    const router = useRouter()
+    return (
+        <TableContainer component={Paper}>
+            <Table>
+                <TableBody>
+                    {props.forms.map(form => (
                         <TableRow
+                            key={form.id}
+                            onClick={() =>
+                                router.push(`/administrative/forms/${form.id}`)
+                            }
                             hover
-                            style={{ cursor: 'pointer' }}
-                            component="a"
+                            sx={{
+                                cursor: 'pointer',
+                                textDecoration: 'none',
+                                color: 'inherit',
+                            }}
                         >
                             <TableCell>{form.name}</TableCell>
                         </TableRow>
-                    </Link>
-                ))}
-            </TableBody>
-        </Table>
-    </TableContainer>
-)
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
+    )
+}
 
 export async function getServerSideProps({ req }) {
     const formsByGroup = await req.api.forms()

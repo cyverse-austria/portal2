@@ -1,24 +1,22 @@
-import React from 'react'
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import {
     Container,
-    Paper,
     Grid,
-    Typography,
-    TextField,
-    TableContainer,
+    Paper,
     Table,
-    TableHead,
     TableBody,
-    TableFooter,
-    TableRow,
     TableCell,
+    TableContainer,
+    TableFooter,
+    TableHead,
     TablePagination,
+    TableRow,
+    TextField,
+    Typography,
 } from '@mui/material'
-import { Layout, DateSpan } from '../../components'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { DateSpan, Layout } from '../../components'
 import { useAPI } from '../../contexts/api'
-import { withGetServerSideError } from '../../contexts/error'
 import { makeStyles } from '../../styles/tss'
 
 //FIXME duplicated elsewhere
@@ -29,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 //TODO move pagination code into shared component
-const FormSubmissions = props => {
+function FormSubmissions(props) {
     const api = useAPI()
     const { classes } = useStyles()
 
@@ -108,65 +106,73 @@ const FormSubmissions = props => {
     )
 }
 
-const FormSubmissionTable = ({
-    rows,
-    rowsPerPage,
-    count,
-    page,
-    handleChangePage,
-    handleChangeRowsPerPage,
-}) => (
-    <TableContainer component={Paper}>
-        <Table size="small">
-            <TableHead>
-                <TableRow>
-                    <TableCell>Form</TableCell>
-                    <TableCell>Username</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Country</TableCell>
-                    <TableCell>Date</TableCell>
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {rows.map(submission => (
-                    <TableRow
-                        key={submission.id}
-                        hover
-                        component={Link}
-                        href={`/administrative/submissions/${submission.id}`}
-                        sx={{
-                            cursor: 'pointer',
-                            textDecoration: 'none',
-                            color: 'inherit',
-                        }}
-                    >
-                        <TableCell>{submission.form.name}</TableCell>
-                        <TableCell>{submission.user.username}</TableCell>
-                        <TableCell>{submission.user.email}</TableCell>
-                        <TableCell>
-                            {submission?.user?.region?.country?.name ||
-                                'Not specified'}
-                        </TableCell>
-                        <TableCell>
-                            <DateSpan date={submission.updated_at} />
-                        </TableCell>
+function FormSubmissionTable(props) {
+    const {
+        rows,
+        rowsPerPage,
+        count,
+        page,
+        handleChangePage,
+        handleChangeRowsPerPage,
+    } = props
+    const router = useRouter()
+
+    return (
+        <TableContainer component={Paper}>
+            <Table size="small">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Form</TableCell>
+                        <TableCell>Username</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Country</TableCell>
+                        <TableCell>Date</TableCell>
                     </TableRow>
-                ))}
-            </TableBody>
-            <TableFooter>
-                <TableRow>
-                    <TablePagination
-                        rowsPerPage={rowsPerPage}
-                        count={count}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </TableRow>
-            </TableFooter>
-        </Table>
-    </TableContainer>
-)
+                </TableHead>
+                <TableBody>
+                    {rows.map(submission => (
+                        <TableRow
+                            key={submission.id}
+                            hover
+                            sx={{
+                                cursor: 'pointer',
+                                textDecoration: 'none',
+                                color: 'inherit',
+                            }}
+                            onClick={() =>
+                                router.push(
+                                    `/administrative/submissions/${submission.id}`
+                                )
+                            }
+                        >
+                            <TableCell>{submission.form.name}</TableCell>
+                            <TableCell>{submission.user.username}</TableCell>
+                            <TableCell>{submission.user.email}</TableCell>
+                            <TableCell>
+                                {submission?.user?.region?.country?.name ||
+                                    'Not specified'}
+                            </TableCell>
+                            <TableCell>
+                                <DateSpan date={submission.updated_at} />
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TablePagination
+                            rowsPerPage={rowsPerPage}
+                            count={count}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    </TableRow>
+                </TableFooter>
+            </Table>
+        </TableContainer>
+    )
+}
 
 export async function getServerSideProps({ req }) {
     const { count, results } = await req.api.formSubmissions()

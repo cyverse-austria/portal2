@@ -1,26 +1,24 @@
-import React from 'react'
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { makeStyles } from '../../styles/tss'
 import {
+    CircularProgress,
     Container,
     Grid,
     Paper,
-    Typography,
-    TextField,
-    CircularProgress,
-    TableContainer,
     Table,
-    TableHead,
     TableBody,
-    TableFooter,
-    TableRow,
     TableCell,
+    TableContainer,
+    TableFooter,
+    TableHead,
     TablePagination,
+    TableRow,
+    TextField,
+    Typography,
 } from '@mui/material'
-import { Layout, CopyToClipboardButton } from '../../components'
+import { useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
+import { CopyToClipboardButton, Layout } from '../../components'
 import { useAPI } from '../../contexts/api'
-import { withGetServerSideError } from '../../contexts/error'
+import { makeStyles } from '../../styles/tss'
 
 //FIXME duplicated elsewhere
 const useStyles = makeStyles()(theme => ({
@@ -30,7 +28,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 //TODO move pagination code into shared component
-const Users = props => {
+function Users(props) {
     const api = useAPI()
     const { classes } = useStyles()
 
@@ -129,85 +127,97 @@ const Users = props => {
     )
 }
 
-const UserTable = ({
-    rows,
-    rowsPerPage,
-    count,
-    page,
-    handleChangePage,
-    handleChangeRowsPerPage,
-}) => (
-    <TableContainer component={Paper}>
-        <Table size="small">
-            <TableHead>
-                <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Username</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Institution</TableCell>
-                    <TableCell>Occupation</TableCell>
-                    <TableCell>Region</TableCell>
-                    <TableCell>Country</TableCell>
-                    {/* <TableCell>Joined</TableCell> */}
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {rows.map((user, index) => {
-                    const d = new Date(user.date_joined)
-                    const parts = (user.email || '').split('@')
-                    return (
-                        <TableRow
-                            key={index}
-                            hover
-                            component={Link}
-                            href={`/administrative/users/${user.id}`}
-                            sx={{
-                                cursor: 'pointer',
-                                textDecoration: 'none',
-                                color: 'inherit',
-                            }}
-                        >
-                            <TableCell>
-                                {user.first_name} {user.last_name}
-                            </TableCell>
-                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                                {user.username}
-                                <CopyToClipboardButton text={user.username} />
-                            </TableCell>
-                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                                {parts[0]}
-                                <wbr />@{parts[1]}
-                                <CopyToClipboardButton text={user.email} />
-                            </TableCell>
-                            <TableCell>{user.institution}</TableCell>
-                            <TableCell>
-                                {user?.occupation?.name || 'Not specified'}
-                            </TableCell>
-                            <TableCell>
-                                {user?.region?.name || 'Not specified'}
-                            </TableCell>
-                            <TableCell>
-                                {user?.region?.country?.name || 'Not specified'}
-                            </TableCell>
-                        </TableRow>
-                    )
-                })}
-            </TableBody>
-            <TableFooter>
-                <TableRow>
-                    <TablePagination
-                        rowsPerPageOptions={[5, 10, 25, 50]}
-                        rowsPerPage={rowsPerPage}
-                        count={count}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </TableRow>
-            </TableFooter>
-        </Table>
-    </TableContainer>
-)
+function UserTable(props) {
+    const {
+        rows,
+        rowsPerPage,
+        count,
+        page,
+        handleChangePage,
+        handleChangeRowsPerPage,
+    } = props
+
+    const router = useRouter()
+
+    return (
+        <TableContainer component={Paper}>
+            <Table size="small">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Username</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Institution</TableCell>
+                        <TableCell>Occupation</TableCell>
+                        <TableCell>Region</TableCell>
+                        <TableCell>Country</TableCell>
+                        {/* <TableCell>Joined</TableCell> */}
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {rows.map((user, index) => {
+                        const d = new Date(user.date_joined)
+                        const parts = (user.email || '').split('@')
+                        return (
+                            <TableRow
+                                key={index}
+                                hover
+                                sx={{
+                                    cursor: 'pointer',
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                }}
+                                onClick={() => {
+                                    router.push(
+                                        `/administrative/users/${user.id}`
+                                    )
+                                }}
+                            >
+                                <TableCell>
+                                    {user.first_name} {user.last_name}
+                                </TableCell>
+                                <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                    {user.username}
+                                    <CopyToClipboardButton
+                                        text={user.username}
+                                    />
+                                </TableCell>
+                                <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                    {parts[0]}
+                                    <wbr />@{parts[1]}
+                                    <CopyToClipboardButton text={user.email} />
+                                </TableCell>
+                                <TableCell>{user.institution}</TableCell>
+                                <TableCell>
+                                    {user?.occupation?.name || 'Not specified'}
+                                </TableCell>
+                                <TableCell>
+                                    {user?.region?.name || 'Not specified'}
+                                </TableCell>
+                                <TableCell>
+                                    {user?.region?.country?.name ||
+                                        'Not specified'}
+                                </TableCell>
+                            </TableRow>
+                        )
+                    })}
+                </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10, 25, 50]}
+                            rowsPerPage={rowsPerPage}
+                            count={count}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    </TableRow>
+                </TableFooter>
+            </Table>
+        </TableContainer>
+    )
+}
 
 export async function getServerSideProps({ req }) {
     const { count, results } = await req.api.users()
