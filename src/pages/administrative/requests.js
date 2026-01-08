@@ -123,7 +123,7 @@ function AccessRequests(props) {
 }
 
 function RequestTable(props) {
-    let {
+    const {
         rows,
         rowsPerPage,
         count,

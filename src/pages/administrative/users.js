@@ -1,27 +1,24 @@
-import React from 'react'
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { makeStyles } from '../../styles/tss'
 import {
+    CircularProgress,
     Container,
     Grid,
     Paper,
-    Typography,
-    TextField,
-    CircularProgress,
-    TableContainer,
     Table,
-    TableHead,
     TableBody,
-    TableFooter,
-    TableRow,
     TableCell,
+    TableContainer,
+    TableFooter,
+    TableHead,
     TablePagination,
+    TableRow,
+    TextField,
+    Typography,
 } from '@mui/material'
 import { useRouter } from 'next/navigation'
-import { Layout, CopyToClipboardButton } from '../../components'
+import React, { useEffect, useState } from 'react'
+import { CopyToClipboardButton, Layout } from '../../components'
 import { useAPI } from '../../contexts/api'
-import { withGetServerSideError } from '../../contexts/error'
+import { makeStyles } from '../../styles/tss'
 
 //FIXME duplicated elsewhere
 const useStyles = makeStyles()(theme => ({
@@ -131,7 +128,7 @@ function Users(props) {
 }
 
 function UserTable(props) {
-    let {
+    const {
         rows,
         rowsPerPage,
         count,
