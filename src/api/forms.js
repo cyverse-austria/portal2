@@ -139,7 +139,7 @@ router.get(
         if (intercom) {
             for (let conversation of submission.conversations) {
                 const c = await intercom.getConversation(
-                    conversation.intercom_conversation_id
+                    conversation.dataValues.intercom_conversation_id
                 )
                 if (c) {
                     conversation.setDataValue('source', c.source)

@@ -1,36 +1,34 @@
-import React from 'react'
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import {
-    Container,
-    Paper,
-    Grid,
-    Typography,
-    TextField,
-    TableContainer,
-    Table,
-    TableHead,
-    TableBody,
-    TableFooter,
-    TableRow,
-    TableCell,
-    TablePagination,
     CircularProgress,
+    Container,
+    Grid,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableFooter,
+    TableHead,
+    TablePagination,
+    TableRow,
+    TextField,
+    Typography,
 } from '@mui/material'
-import { Layout, DateSpan } from '../../components'
+import { useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
+import { DateSpan, Layout } from '../../components'
 import { useAPI } from '../../contexts/api'
-import { withGetServerSideError } from '../../contexts/error'
 import { makeStyles } from '../../styles/tss'
 
 //FIXME duplicated elsewhere
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(_ => ({
     paper: {
         padding: '3em',
     },
 }))
 
 //TODO move pagination code into shared component
-const AccessRequests = props => {
+function AccessRequests(props) {
     const api = useAPI()
     const { classes } = useStyles()
 
@@ -124,67 +122,75 @@ const AccessRequests = props => {
     )
 }
 
-const RequestTable = ({
-    rows,
-    rowsPerPage,
-    count,
-    page,
-    handleChangePage,
-    handleChangeRowsPerPage,
-}) => (
-    <TableContainer component={Paper}>
-        <Table size="small">
-            <TableHead>
-                <TableRow>
-                    <TableCell>Service</TableCell>
-                    <TableCell>Username</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Country</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Status</TableCell>
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {rows.map(request => (
-                    <TableRow
-                        key={request.id}
-                        hover
-                        component={Link}
-                        href={`/administrative/requests/${request.id}`}
-                        sx={{
-                            cursor: 'pointer',
-                            textDecoration: 'none',
-                            color: 'inherit',
-                        }}
-                    >
-                        <TableCell>{request.service.name}</TableCell>
-                        <TableCell>{request.user.username}</TableCell>
-                        <TableCell>{request.user.email}</TableCell>
-                        <TableCell>
-                            {request?.user?.region?.country?.name ||
-                                'Not specified'}
-                        </TableCell>
-                        <TableCell>
-                            <DateSpan date={request.updated_at} />
-                        </TableCell>
-                        <TableCell>{request.status}</TableCell>
+function RequestTable(props) {
+    let {
+        rows,
+        rowsPerPage,
+        count,
+        page,
+        handleChangePage,
+        handleChangeRowsPerPage,
+    } = props
+    const router = useRouter()
+
+    return (
+        <TableContainer component={Paper}>
+            <Table size="small">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Service</TableCell>
+                        <TableCell>Username</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Country</TableCell>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Status</TableCell>
                     </TableRow>
-                ))}
-            </TableBody>
-            <TableFooter>
-                <TableRow>
-                    <TablePagination
-                        rowsPerPage={rowsPerPage}
-                        count={count}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </TableRow>
-            </TableFooter>
-        </Table>
-    </TableContainer>
-)
+                </TableHead>
+                <TableBody>
+                    {rows.map(request => (
+                        <TableRow
+                            key={request.id}
+                            hover
+                            onClick={() =>
+                                router.push(
+                                    `/administrative/requests/${request.id}`
+                                )
+                            }
+                            sx={{
+                                cursor: 'pointer',
+                                textDecoration: 'none',
+                                color: 'inherit',
+                            }}
+                        >
+                            <TableCell>{request.service.name}</TableCell>
+                            <TableCell>{request.user.username}</TableCell>
+                            <TableCell>{request.user.email}</TableCell>
+                            <TableCell>
+                                {request?.user?.region?.country?.name ||
+                                    'Not specified'}
+                            </TableCell>
+                            <TableCell>
+                                <DateSpan date={request.updated_at} />
+                            </TableCell>
+                            <TableCell>{request.status}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TablePagination
+                            rowsPerPage={rowsPerPage}
+                            count={count}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    </TableRow>
+                </TableFooter>
+            </Table>
+        </TableContainer>
+    )
+}
 
 export async function getServerSideProps({ req }) {
     const { count, results } = await req.api.serviceRequests()

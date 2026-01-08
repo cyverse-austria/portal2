@@ -54,7 +54,9 @@ async function getUser(id, type) {
 
 async function getConversation(id) {
     try {
-        const res = await intercom.conversations.find({ id })
+        const res = await intercom.conversations.find({
+            conversation_id: id,
+        })
         if (res && res.body) return res.body
     } catch (error) {
         logger.error('getConversation:', error)
