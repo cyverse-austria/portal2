@@ -186,7 +186,7 @@ app.prepare()
         // Default to landing page if not logged in
         server.get('/', keycloakClient.checkSso(), (req, res) => {
             const token = getUserToken(req)
-            if (token) res.redirect('/* /services */')
+            if (token) res.redirect('/services')
             else app.render(req, res, '/welcome', { externalRegistration: externalRegistrationConfig })
         })
 
