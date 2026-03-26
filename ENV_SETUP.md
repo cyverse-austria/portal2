@@ -126,6 +126,11 @@ All configuration is stored in JSON format in the `portal2.json` file. See `port
 - `profile.warningPeriod` - Days before showing update warning
 - `profile.*Text` - User-facing messages
 
+### 🖥️ UI Settings
+- `externalRegistration` - Set this flag to true in the configuration
+    to remove any sign-up feature from your CyVerse Portal UI. This assumes
+    the User model is created by a third party service using the Portal API.
+
 
 ## Environment-Specific Setup
 

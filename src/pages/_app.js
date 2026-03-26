@@ -10,6 +10,7 @@ import { APIProvider } from '../contexts/api'
 import { UserProvider } from '../contexts/user'
 import { ErrorProvider } from '../contexts/error'
 import { SuccessProvider } from '../contexts/success'
+import { ConfigProvider } from '../contexts/config'
 import Custom404 from './404'
 import Custom500 from './500'
 import getConfig from 'next/config'
@@ -43,7 +44,6 @@ function MyApp(props) {
         baseUrl,
         token,
     } = props
-
     // Added to handle errors from API during SSR
     if (pageProps.error) {
         console.log('Error in getServerSideProps:', pageProps.error)
@@ -72,22 +72,24 @@ function MyApp(props) {
             <Sentry.ErrorBoundary fallback={'An error has occurred'}>
                 <ThemeProvider theme={theme}>
                     <CssBaseline />
-                    <APIProvider baseUrl={baseUrl} token={token}>
-                        <UserProvider user={user}>
-                            <Head>
-                                <title>User Portal - CyVerse</title>
-                                <meta
-                                    name="viewport"
-                                    content="initial-scale=1, width=device-width"
-                                />
-                            </Head>
-                            <ErrorProvider>
-                                <SuccessProvider>
-                                    <Component {...pageProps} />
-                                </SuccessProvider>
-                            </ErrorProvider>
-                        </UserProvider>
-                    </APIProvider>
+                    <ConfigProvider config={publicRuntimeConfig}>
+                        <APIProvider baseUrl={baseUrl} token={token}>
+                            <UserProvider user={user}>
+                                <Head>
+                                    <title>User Portal - CyVerse</title>
+                                    <meta
+                                        name="viewport"
+                                        content="initial-scale=1, width=device-width"
+                                    />
+                                </Head>
+                                    <ErrorProvider>
+                                        <SuccessProvider>
+                                            <Component {...pageProps} />
+                                        </SuccessProvider>
+                                    </ErrorProvider>
+                            </UserProvider>
+                        </APIProvider>
+                    </ConfigProvider>
                 </ThemeProvider>
             </Sentry.ErrorBoundary>
         </CacheProvider>

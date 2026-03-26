@@ -136,6 +136,7 @@ const Right = props => {
     const query = router && router.query ? router.query : {}
 
     const [signup, setSignup] = useState(!!query.signup)
+    const [externalRegistration] = useState(query.externalRegistration && query.externalRegistration == "true")
     const [forgotPassword, setForgotPassword] = useState(!!query.forgot)
 
     if (forgotPassword)
@@ -156,21 +157,26 @@ const Right = props => {
                     Welcome to CyVerse!
                 </Typography>
             </Box>
-            <Box pt={'5em'}>
-                <Typography gutterBottom>New to CyVerse?</Typography>
-            </Box>
-            <Box>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    disableElevation
-                    className={classes.button}
-                    onClick={() => setSignup(true)}
-                >
-                    Sign Up
-                </Button>
-            </Box>
+            
+            {!externalRegistration && (
+                <Box pt={'5em'}>
+                    <Typography gutterBottom>New to CyVerse?</Typography>
+                </Box>
+            )}
+            {!externalRegistration && (
+                <Box>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        disableElevation
+                        className={classes.button}
+                        onClick={() => setSignup(true)}
+                    >
+                        Sign Up
+                    </Button>
+                </Box>
+            )}
             <Box mt={5}>
                 <Button
                     variant="outlined"
@@ -183,15 +189,17 @@ const Right = props => {
                     Login
                 </Button>
             </Box>
-            <Box mt={7} mb={5}>
-                <Button
-                    variant="text"
-                    size="small"
-                    onClick={() => setForgotPassword(true)}
-                >
-                    Forgot Password
-                </Button>
-            </Box>
+            {!externalRegistration && (
+                <Box mt={7} mb={5}>
+                    <Button
+                        variant="text"
+                        size="small"
+                        onClick={() => setForgotPassword(true)}
+                    >
+                        Forgot Password
+                    </Button>
+                </Box>
+            )}
         </div>
     )
 }
