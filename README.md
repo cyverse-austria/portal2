@@ -137,7 +137,8 @@ Edit your `portal2.json` file with the required settings:
   },
   "features": {
     "intercomEnabled": false
-  }
+  },
+  "externalRegistration": false
 }
 ```
 

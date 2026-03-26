@@ -291,6 +291,15 @@ class ConfigManager {
     }
 
     /**
+     * Get external registration flag
+     * @returns {Object} External registration config
+     */
+    getExternalRegistrationConfig() {
+        this.init()
+        return this._config.externalRegistration
+    }
+
+    /**
      * Get all configuration
      * @returns {Object} Complete configuration object
      */

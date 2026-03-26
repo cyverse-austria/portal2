@@ -34,6 +34,7 @@ import { useAPI } from '../contexts/api'
 import { useError } from '../contexts/error'
 import { useSuccess } from '../contexts/success'
 import { useUser } from '../contexts/user'
+import { useConfig }  from '../contexts/config'
 import { sortCountries } from '../lib/misc'
 import { makeStyles } from '../styles/tss'
 const properties = require('../user-properties.json')
@@ -66,6 +67,7 @@ const Account = () => {
     const [_, setError] = useError()
     const [__, setSuccess] = useSuccess()
     const [user, setUser] = useUser()
+    const config = useConfig()
 
     // All useState hooks must be declared before any conditional returns
     const [sentEmails, setSentEmails] = useState([])
@@ -176,6 +178,7 @@ const Account = () => {
                 changeHandler,
                 inputHandler,
                 setInstitutions,
+                config,
             })
         )
     }, [
@@ -357,8 +360,42 @@ const getForms = ({
     changeHandler,
     inputHandler,
     setInstitutions,
+    config,
 }) => {
-    return [
+    const password_field = {
+        title: 'Password',
+        subtitle: (
+            <>
+                Reset your password <a href="/forgot">here</a> if you have
+                forgotten it
+            </>
+        ),
+        autosave: false,
+        hideReviewMode: true,
+        submitHandler: changeHandler,
+        fields: [
+            {
+                id: 'old_password',
+                name: 'Old Password',
+                type: 'password',
+                required: true,
+            },
+            {
+                id: 'new_password',
+                name: 'New Password',
+                type: 'password',
+                required: true,
+            },
+            {
+                id: 'confirm_password',
+                name: 'Confirm New Password',
+                type: 'password',
+                required: true,
+            },
+        ],
+    }
+    
+    const base_fields = [
         {
             title: 'Identification',
             autosave: true,
@@ -402,38 +439,6 @@ const getForms = ({
                     ),
                     type: 'text',
                     value: user.orcid_id,
-                },
-            ],
-        },
-        {
-            title: 'Password',
-            subtitle: (
-                <>
-                    Reset your password <a href="/forgot">here</a> if you have
-                    forgotten it
-                </>
-            ),
-            autosave: false,
-            hideReviewMode: true,
-            submitHandler: changeHandler,
-            fields: [
-                {
-                    id: 'old_password',
-                    name: 'Old Password',
-                    type: 'password',
-                    required: true,
-                },
-                {
-                    id: 'new_password',
-                    name: 'New Password',
-                    type: 'password',
-                    required: true,
-                },
-                {
-                    id: 'confirm_password',
-                    name: 'Confirm New Password',
-                    type: 'password',
-                    required: true,
                 },
             ],
         },
@@ -565,6 +570,7 @@ const getForms = ({
             ],
         },
     ]
+    return config.EXTERNAL_REGISTRATION ? base_fields : [...base_fields, password_field]
 }
 
 const EmailForm = ({ emails, title, subtitle, onChange }) => {

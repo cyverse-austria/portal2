@@ -181,27 +181,31 @@ app.prepare()
             req.ws = sockets[username]
             next()
         })
-
+        
+        const externalRegistrationConfig = config.getExternalRegistrationConfig()
         // Default to landing page if not logged in
         server.get('/', keycloakClient.checkSso(), (req, res) => {
             const token = getUserToken(req)
-            if (token) res.redirect('/services')
-            else app.render(req, res, '/welcome')
+            if (token) res.redirect('/* /services */')
+            else app.render(req, res, '/welcome', { externalRegistration: externalRegistrationConfig })
         })
 
         // Public UI pages
-        server.get(['/signup', '/register'], (req, res) => {
-            app.render(req, res, '/welcome', { signup: 1 })
-        })
+        
+        if (!externalRegistrationConfig) {
+            server.get(['/signup', '/register'], (req, res) => {
+                app.render(req, res, '/welcome', { signup: 1 })
+            })
 
-        server.get(['/forgot', '/password/forgot'], (req, res) => {
-            // /password/forgot for old links from DE/CAS
-            app.render(req, res, '/welcome', { forgot: 1 })
-        })
+            server.get(['/forgot', '/password/forgot'], (req, res) => {
+                // /password/forgot for old links from DE/CAS
+                app.render(req, res, '/welcome', { forgot: 1 })
+            })
 
-        server.get('/password', (req, res) => {
-            app.render(req, res, '/password')
-        })
+            server.get('/password', (req, res) => {
+                app.render(req, res, '/password')
+            })
+        }
 
         server.get('/confirm_email', (req, res) => {
             app.render(req, res, '/confirm_email')
